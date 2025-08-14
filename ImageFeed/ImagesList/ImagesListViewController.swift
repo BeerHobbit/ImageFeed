@@ -59,51 +59,19 @@ extension ImagesListViewController: UITableViewDataSource {
 }
 
 
-//MARK: Cell Configuration Methods
+//MARK: Cell Configuration Method
 
 extension ImagesListViewController {
     
     private func configCell(for cell: ImagesListCell, with indexPath: IndexPath) {
         guard let image = UIImage(named: photosName[indexPath.row]) else { return }
         cell.cellImageView.image = image
-        configCornerRadius(for: cell.cellImageView)
         
         cell.dateLabel.text = dateFormatter.string(from: Date())
         
         let isLiked: Bool = indexPath.row % 2 == 0
         let likeImage = isLiked ? UIImage(named: "like_button_on") : UIImage(named: "like_button_off")
         cell.likeButton.setImage(likeImage, for: .normal)
-        
-        guard let buttonImageView = cell.likeButton.imageView else { return }
-        configShadow(for: buttonImageView)
-        
-        createGradientLayer(for: cell.gradientView)
-    }
-    
-    private func configCornerRadius(for imageView: UIImageView) {
-        imageView.layer.cornerRadius = 16
-        imageView.layer.masksToBounds = true
-    }
-    
-    private func createGradientLayer(for view: UIView) {
-        let gradientLayer = CAGradientLayer()
-        gradientLayer.frame = view.bounds
-        
-        gradientLayer.colors = [
-            UIColor(red: 26/255, green: 27/255, blue: 34/255, alpha: 0).cgColor,
-            UIColor(red: 26/255, green: 27/255, blue: 34/255, alpha: 0.2).cgColor
-        ]
-        gradientLayer.locations = [0.0, 0.5393]
-        gradientLayer.startPoint = CGPoint(x: 0.5, y: 0.0)
-        gradientLayer.endPoint = CGPoint(x: 0.5, y: 1.0)
-        view.layer.insertSublayer(gradientLayer, at: 0)
-    }
-    
-    private func configShadow(for imageView: UIImageView) {
-        imageView.layer.shadowColor = UIColor.ypBlack.cgColor
-        imageView.layer.shadowOpacity = 0.1
-        imageView.layer.shadowOffset = CGSize(width: 0, height: 1)
-        imageView.layer.shadowRadius = 4
     }
     
 }
