@@ -9,10 +9,10 @@ final class ImagesListCell: UITableViewCell {
     
     //MARK: IB Outlets
     
-    @IBOutlet weak var cellImageView: UIImageView!
-    @IBOutlet weak var likeButton: UIButton!
-    @IBOutlet weak var dateLabel: UILabel!
-    @IBOutlet weak var gradientView: UIView!
+    @IBOutlet private weak var cellImageView: UIImageView!
+    @IBOutlet private weak var likeButton: UIButton!
+    @IBOutlet private weak var dateLabel: UILabel!
+    @IBOutlet private weak var gradientView: UIView!
     
     
     //MARK: Private Properties
@@ -24,9 +24,7 @@ final class ImagesListCell: UITableViewCell {
     
     override func awakeFromNib() {
         super.awakeFromNib()
-        configCornerRadius(for: cellImageView)
-        setupGradient()
-        configShadow(for: likeButton.imageView)
+        configCellUI()
     }
     
     override func layoutSubviews() {
@@ -35,19 +33,34 @@ final class ImagesListCell: UITableViewCell {
     }
     
     
-    //MARK: Private Methods
+    //MARK: Cell Configuration Method
+    
+    func configure(image: UIImage?, date: String, isLiked: Bool) {
+        cellImageView.image = image
+        dateLabel.text = date
+        let likeImage = isLiked ? UIImage(named: "like_button_on") : UIImage(named: "like_button_off")
+        likeButton.setImage(likeImage, for: .normal)
+    }
+    
+    //MARK: UI Configuration Methods
+    
+    private func configCellUI() {
+        configCornerRadius(for: cellImageView)
+        configGradient()
+        configShadow(for: likeButton.imageView)
+    }
     
     private func configCornerRadius(for imageView: UIImageView) {
         imageView.layer.cornerRadius = 16
         imageView.layer.masksToBounds = true
     }
     
-    private func setupGradient() {
-        gradientLayer.colors = [
-            UIColor(red: 26/255, green: 27/255, blue: 34/255, alpha: 0).cgColor,
-            UIColor(red: 26/255, green: 27/255, blue: 34/255, alpha: 0.2).cgColor
-        ]
-        gradientLayer.locations = [0.0, 0.5393]
+    private func configGradient() {
+        let startColor = UIColor.ypBlack.withAlphaComponent(0.0).cgColor
+        let endColor = UIColor.ypBlack.withAlphaComponent(0.2).cgColor
+        
+        gradientLayer.colors = [startColor, endColor]
+        gradientLayer.locations = [0.0, 0.5]
         gradientLayer.startPoint = CGPoint(x: 0.5, y: 0.0)
         gradientLayer.endPoint = CGPoint(x: 0.5, y: 1.0)
         gradientView.layer.insertSublayer(gradientLayer, at: 0)

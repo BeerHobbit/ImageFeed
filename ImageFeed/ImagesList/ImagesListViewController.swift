@@ -52,26 +52,14 @@ extension ImagesListViewController: UITableViewDataSource {
         guard let imageListCell = cell as? ImagesListCell else {
             return UITableViewCell()
         }
-        configCell(for: imageListCell, with: indexPath)
+        
+        imageListCell.configure(
+            image: UIImage(named: photosName[indexPath.row]),
+            date: dateFormatter.string(from: Date()),
+            isLiked: indexPath.row % 2 == 0
+        )
+        
         return imageListCell
-    }
-    
-}
-
-
-//MARK: Cell Configuration Method
-
-extension ImagesListViewController {
-    
-    private func configCell(for cell: ImagesListCell, with indexPath: IndexPath) {
-        guard let image = UIImage(named: photosName[indexPath.row]) else { return }
-        cell.cellImageView.image = image
-        
-        cell.dateLabel.text = dateFormatter.string(from: Date())
-        
-        let isLiked: Bool = indexPath.row % 2 == 0
-        let likeImage = isLiked ? UIImage(named: "like_button_on") : UIImage(named: "like_button_off")
-        cell.likeButton.setImage(likeImage, for: .normal)
     }
     
 }
