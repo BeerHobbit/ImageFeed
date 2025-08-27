@@ -2,15 +2,15 @@ import UIKit
 
 final class ImagesListViewController: UIViewController {
     
-    //MARK: IB Outlets
+    //MARK: - IB Outlets
     
     @IBOutlet private var imagesTableView: UITableView!
     
     
-    //MARK: Private Properties
+    //MARK: - Private Properties
     
-    private let photosName: [String] = Array(0..<20).map { "\($0)" }
-    private let showSingleImageSegueIndentifier = "ShowSingleImage"
+    private let photoNames: [String] = (0..<20).map(String.init)
+    private let segueID = "ShowSingleImage"
     
     private lazy var dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -20,7 +20,7 @@ final class ImagesListViewController: UIViewController {
     }()
     
     
-    //MARK: Life Cycle
+    //MARK: - Life Cycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -29,28 +29,24 @@ final class ImagesListViewController: UIViewController {
     }
     
     
-    //MARK: Overrides
+    //MARK: - Overrides
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == showSingleImageSegueIndentifier {
-            guard
-                let viewController = segue.destination as? SingleImageViewController,
-                let indexPath = sender as? IndexPath
-            else {
-                assertionFailure("Invalid segue destination")
-                return
-            }
-            
-            let image = UIImage(named: photosName[indexPath.row])
-            viewController.image = image
-        } else {
+        guard
+            segue.identifier == segueID,
+            let destination  = segue.destination as? SingleImageViewController,
+            let indexPath = sender as? IndexPath
+        else {
             super.prepare(for: segue, sender: sender)
+            return
         }
+        destination.image = UIImage(named: photoNames[indexPath.row])
     }
     
-    //MARK: Private Methods
     
-    private func configDependencies() { }
+    //MARK: - Private Methods
+    
+    private func configDependencies() {}  // Do to some next sprint. I think this will be the 10th sprint
     
     private func configUI() {
         imagesTableView.contentInset = UIEdgeInsets(top: 12, left: 0, bottom: 12, right: 0)
@@ -59,12 +55,12 @@ final class ImagesListViewController: UIViewController {
 }
 
 
-//MARK: UITableViewDataSource
+//MARK: - UITableViewDataSource
 
 extension ImagesListViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return photosName.count
+        return photoNames.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -74,7 +70,7 @@ extension ImagesListViewController: UITableViewDataSource {
         }
         
         imageListCell.configure(
-            image: UIImage(named: photosName[indexPath.row]),
+            image: UIImage(named: photoNames[indexPath.row]),
             date: dateFormatter.string(from: Date()),
             isLiked: indexPath.row % 2 == 0
         )
@@ -85,16 +81,16 @@ extension ImagesListViewController: UITableViewDataSource {
 }
 
 
-//MARK: UITableViewDelegate
+//MARK: - UITableViewDelegate
 
 extension ImagesListViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        performSegue(withIdentifier: showSingleImageSegueIndentifier, sender: indexPath)
+        performSegue(withIdentifier: segueID, sender: indexPath)
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        guard let image = UIImage(named: photosName[indexPath.row]) else { return 0 }
+        guard let image = UIImage(named: photoNames[indexPath.row]) else { return 0 }
         
         let imageInsets = UIEdgeInsets(top: 4, left: 16, bottom: 4, right: 16)
         let imageViewWidth = tableView.bounds.width - imageInsets.left - imageInsets.right
