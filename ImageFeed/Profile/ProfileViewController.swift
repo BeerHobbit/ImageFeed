@@ -122,7 +122,8 @@ final class ProfileViewController: UIViewController {
     
     //MARK: - Actions
     
-    @objc private func didTapLogoutButton(_ sender: UIButton) {} // Do to some next sprint. I think this will be the 10th sprint
+    @objc
+    private func didTapLogoutButton(_ sender: UIButton) {} // Do to some next sprint
     
 }
 

@@ -10,7 +10,7 @@ final class ImagesListViewController: UIViewController {
     //MARK: - Private Properties
     
     private let photoNames: [String] = (0..<20).map(String.init)
-    private let segueID = "ShowSingleImage"
+    private let singleImageSegueID = "ShowSingleImage"
     
     private lazy var dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -33,7 +33,7 @@ final class ImagesListViewController: UIViewController {
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         guard
-            segue.identifier == segueID,
+            segue.identifier == singleImageSegueID,
             let destination  = segue.destination as? SingleImageViewController,
             let indexPath = sender as? IndexPath
         else {
@@ -46,7 +46,7 @@ final class ImagesListViewController: UIViewController {
     
     //MARK: - Private Methods
     
-    private func configDependencies() {}  // Do to some next sprint. I think this will be the 10th sprint
+    private func configDependencies() {}  // Do to some next sprint
     
     private func configUI() {
         imagesTableView.contentInset = UIEdgeInsets(top: 12, left: 0, bottom: 12, right: 0)
@@ -86,7 +86,7 @@ extension ImagesListViewController: UITableViewDataSource {
 extension ImagesListViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        performSegue(withIdentifier: segueID, sender: indexPath)
+        performSegue(withIdentifier: singleImageSegueID, sender: indexPath)
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {

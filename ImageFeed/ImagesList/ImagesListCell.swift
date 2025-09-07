@@ -42,6 +42,7 @@ final class ImagesListCell: UITableViewCell {
         likeButton.setImage(likeImage, for: .normal)
     }
     
+    
     //MARK: - UI Configuration Methods
     
     private func configCellUI() {
