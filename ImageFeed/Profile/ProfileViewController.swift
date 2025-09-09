@@ -71,7 +71,6 @@ final class ProfileViewController: UIViewController {
         return stack
     }()
     
-    
     //MARK: - Life Cycle
     
     override func viewDidLoad() {
@@ -81,14 +80,12 @@ final class ProfileViewController: UIViewController {
         configActions()
     }
     
-    
     //MARK: - Configure UI
     
     private func configUI() {
         view.backgroundColor = .ypBlack
         view.addSubview(vStack)
     }
-    
     
     //MARK: - Configure Constraints
     
@@ -112,17 +109,16 @@ final class ProfileViewController: UIViewController {
         )
     }
     
-    
     //MARK: - Configure Actions
     
     private func configActions() {
         logoutButton.addTarget(self, action: #selector (didTapLogoutButton(_:)), for: .touchUpInside)
     }
     
-    
     //MARK: - Actions
     
-    @objc private func didTapLogoutButton(_ sender: UIButton) {} // Do to some next sprint. I think this will be the 10th sprint
+    @objc
+    private func didTapLogoutButton(_ sender: UIButton) {} // Do to some next sprint
     
 }
 

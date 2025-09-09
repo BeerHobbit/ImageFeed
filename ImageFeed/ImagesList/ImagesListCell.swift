@@ -6,7 +6,6 @@ final class ImagesListCell: UITableViewCell {
     
     static let reuseIdentifier = "ImagesListCell"
     
-    
     //MARK: - IB Outlets
     
     @IBOutlet private weak var cellImageView: UIImageView!
@@ -14,11 +13,9 @@ final class ImagesListCell: UITableViewCell {
     @IBOutlet private weak var dateLabel: UILabel!
     @IBOutlet private weak var gradientView: UIView!
     
-    
     //MARK: - Private Properties
     
     private let gradientLayer = CAGradientLayer()
-    
     
     //MARK: - Overrides
     
@@ -31,7 +28,6 @@ final class ImagesListCell: UITableViewCell {
         super.layoutSubviews()
         gradientLayer.frame = gradientView.bounds
     }
-    
     
     //MARK: - Cell Configuration Method
     
