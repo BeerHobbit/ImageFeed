@@ -5,9 +5,8 @@ final class SplashViewController: UIViewController {
     //MARK: - Private Properties
     
     private let storage = OAuth2TokenStorage()
-    private let authScreenSegueID = "showAuthenticationScreenSegueIdentifier"
-    private let tabBarStoryboardID = "TabBarViewController"
-    
+    private let authScreenSegueIdentifier = "ShowAuthenticationScreen"
+    private let tabBarStoryboardIdentifier = "TabBarViewController"
     
     //MARK: - Life Cycle
     
@@ -16,11 +15,10 @@ final class SplashViewController: UIViewController {
         checkTokenStorage()
     }
     
-    
     //MARK: - Overrides
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        guard segue.identifier == authScreenSegueID else {
+        guard segue.identifier == authScreenSegueIdentifier else {
             super.prepare(for: segue, sender: sender)
             return
         }
@@ -29,13 +27,12 @@ final class SplashViewController: UIViewController {
             let destination = segue.destination as? UINavigationController,
             let viewController = destination.viewControllers.first as? AuthViewController
         else {
-            assertionFailure("❌ Failed to prepare for \(authScreenSegueID)")
+            assertionFailure("❌ Failed to prepare for \(authScreenSegueIdentifier)")
             return
         }
         
         viewController.delegate = self
     }
-    
     
     //MARK: - Private Methods
     
@@ -43,7 +40,7 @@ final class SplashViewController: UIViewController {
         if storage.token != nil {
            switchToTabBarController()
         } else {
-            performSegue(withIdentifier: authScreenSegueID, sender: nil)
+            performSegue(withIdentifier: authScreenSegueIdentifier, sender: nil)
         }
     }
     
@@ -52,14 +49,11 @@ final class SplashViewController: UIViewController {
             assertionFailure("❌ Invalid window configuration")
             return
         }
-        
-        let tabBarController = UIStoryboard(name: "Main", bundle: .main).instantiateViewController(withIdentifier: tabBarStoryboardID)
-        
+        let tabBarController = UIStoryboard(name: "Main", bundle: .main).instantiateViewController(withIdentifier: tabBarStoryboardIdentifier)
         window.rootViewController = tabBarController
     }
     
 }
-
 
 //MARK: - AuthViewControllerDelegate
 

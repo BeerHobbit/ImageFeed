@@ -6,11 +6,9 @@ final class OAuth2Service {
     
     static let shared = OAuth2Service()
     
-    
     //MARK: - Initializer
     
     private init() {}
-    
     
     //MARK: - Public Methods
     
@@ -25,6 +23,7 @@ final class OAuth2Service {
             case .success(let data):
                 do {
                     let decoder = JSONDecoder()
+                    decoder.keyDecodingStrategy = .convertFromSnakeCase
                     let response = try decoder.decode(OAuthTokenResponseBody.self, from: data)
                     let accessToken = response.accessToken
                     completion(.success(accessToken))
@@ -39,7 +38,6 @@ final class OAuth2Service {
         
         session.resume()
     }
-    
     
     //MARK: - Private Methods
     

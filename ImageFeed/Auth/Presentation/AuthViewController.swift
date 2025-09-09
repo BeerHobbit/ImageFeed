@@ -11,12 +11,10 @@ final class AuthViewController: UIViewController {
     
     weak var delegate: AuthViewControllerDelegate?
     
-    
     //MARK: - Private Propeties
     
-    private let webViewSegueID = "ShowWebView"
+    private let authWebViewSegueIdentifier = "ShowWebView"
     private var oauth2Service: OAuth2Service?
-    
     
     //MARK: - Life Cycle
     
@@ -26,23 +24,21 @@ final class AuthViewController: UIViewController {
         configUI()
     }
     
-    
     //MARK: - Overrides
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        guard segue.identifier == webViewSegueID else {
+        guard segue.identifier == authWebViewSegueIdentifier else {
             super.prepare(for: segue, sender: sender)
             return
         }
         
         guard let destination = segue.destination as? WebViewViewController else {
-            assertionFailure("❌ Failed to prepare for \(webViewSegueID)")
+            assertionFailure("❌ Failed to prepare for \(authWebViewSegueIdentifier)")
             return
         }
         
         destination.delegate = self
     }
-    
     
     //MARK: - Private Methods
     
@@ -75,7 +71,6 @@ final class AuthViewController: UIViewController {
     }
     
 }
-
 
 //MARK: - WebViewViewControllerDelegate
 

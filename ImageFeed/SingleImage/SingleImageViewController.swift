@@ -9,11 +9,9 @@ final class SingleImageViewController: UIViewController {
     @IBOutlet private weak var backwardButton: UIButton!
     @IBOutlet private weak var shareButton: UIButton!
     
-    
     //MARK: - Public Properties
     
     var image: UIImage?
-    
     
     //MARK: - Life Cycle
     
@@ -22,7 +20,6 @@ final class SingleImageViewController: UIViewController {
         configScrollView()
         configImageInScrollView()
     }
-    
     
     //MARK: - Private Methods
     
@@ -52,6 +49,7 @@ final class SingleImageViewController: UIViewController {
         scrollView.layoutIfNeeded()
         centerImage()
     }
+    
     private func centerImage() {
         let visibleRectSize = scrollView.bounds.size
         let newContentSize = scrollView.contentSize
@@ -70,7 +68,6 @@ final class SingleImageViewController: UIViewController {
         present(shareMenu, animated: true, completion: nil)
     }
     
-    
     //MARK: - IB Actions
     
     @IBAction func didTapBackwardButton(_ sender: UIButton) {
@@ -82,7 +79,6 @@ final class SingleImageViewController: UIViewController {
     }
     
 }
-
 
 //MARK: - UIScrollViewDelegate
 

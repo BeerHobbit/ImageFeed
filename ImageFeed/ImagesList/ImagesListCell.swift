@@ -6,7 +6,6 @@ final class ImagesListCell: UITableViewCell {
     
     static let reuseIdentifier = "ImagesListCell"
     
-    
     //MARK: - IB Outlets
     
     @IBOutlet private weak var cellImageView: UIImageView!
@@ -14,11 +13,9 @@ final class ImagesListCell: UITableViewCell {
     @IBOutlet private weak var dateLabel: UILabel!
     @IBOutlet private weak var gradientView: UIView!
     
-    
     //MARK: - Private Properties
     
     private let gradientLayer = CAGradientLayer()
-    
     
     //MARK: - Overrides
     
@@ -32,7 +29,6 @@ final class ImagesListCell: UITableViewCell {
         gradientLayer.frame = gradientView.bounds
     }
     
-    
     //MARK: - Cell Configuration Method
     
     func configure(image: UIImage?, date: String, isLiked: Bool) {
@@ -41,7 +37,6 @@ final class ImagesListCell: UITableViewCell {
         let likeImage = isLiked ? UIImage(named: "like_button_on") : UIImage(named: "like_button_off")
         likeButton.setImage(likeImage, for: .normal)
     }
-    
     
     //MARK: - UI Configuration Methods
     

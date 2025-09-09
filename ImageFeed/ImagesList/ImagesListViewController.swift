@@ -6,11 +6,10 @@ final class ImagesListViewController: UIViewController {
     
     @IBOutlet private var imagesTableView: UITableView!
     
-    
     //MARK: - Private Properties
     
     private let photoNames: [String] = (0..<20).map(String.init)
-    private let singleImageSegueID = "ShowSingleImage"
+    private let singleImageSegueIdentifier = "ShowSingleImage"
     
     private lazy var dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -18,7 +17,6 @@ final class ImagesListViewController: UIViewController {
         formatter.timeStyle = .none
         return formatter
     }()
-    
     
     //MARK: - Life Cycle
     
@@ -28,12 +26,11 @@ final class ImagesListViewController: UIViewController {
         configUI()
     }
     
-    
     //MARK: - Overrides
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         guard
-            segue.identifier == singleImageSegueID,
+            segue.identifier == singleImageSegueIdentifier,
             let destination  = segue.destination as? SingleImageViewController,
             let indexPath = sender as? IndexPath
         else {
@@ -42,7 +39,6 @@ final class ImagesListViewController: UIViewController {
         }
         destination.image = UIImage(named: photoNames[indexPath.row])
     }
-    
     
     //MARK: - Private Methods
     
@@ -53,7 +49,6 @@ final class ImagesListViewController: UIViewController {
     }
     
 }
-
 
 //MARK: - UITableViewDataSource
 
@@ -80,13 +75,12 @@ extension ImagesListViewController: UITableViewDataSource {
     
 }
 
-
 //MARK: - UITableViewDelegate
 
 extension ImagesListViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        performSegue(withIdentifier: singleImageSegueID, sender: indexPath)
+        performSegue(withIdentifier: singleImageSegueIdentifier, sender: indexPath)
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {

@@ -8,11 +8,9 @@ final class WebViewViewController: UIViewController {
     @IBOutlet private weak var webView: WKWebView!
     @IBOutlet weak var progressView: UIProgressView!
     
-    
     //MARK: - Delegate
     
     weak var delegate: WebViewViewControllerDelegate?
-    
     
     //MARK: - Life Cycle
     
@@ -46,7 +44,6 @@ final class WebViewViewController: UIViewController {
             super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
         }
     }
-    
     
     //MARK: - Private Methods
     
@@ -114,7 +111,6 @@ final class WebViewViewController: UIViewController {
     }
     
 }
-
 
 //MARK: - WKNavigationDelegate
 

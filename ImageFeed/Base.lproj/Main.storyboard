@@ -30,7 +30,7 @@
                         </constraints>
                     </view>
                     <connections>
-                        <segue destination="LXi-0s-TcI" kind="presentation" identifier="showAuthenticationScreenSegueIdentifier" modalPresentationStyle="fullScreen" id="if2-j6-84k"/>
+                        <segue destination="LXi-0s-TcI" kind="presentation" identifier="ShowAuthenticationScreen" modalPresentationStyle="fullScreen" id="if2-j6-84k"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="gCG-AZ-05r" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
