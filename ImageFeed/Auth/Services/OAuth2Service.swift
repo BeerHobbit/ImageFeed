@@ -28,8 +28,8 @@ final class OAuth2Service {
                     let accessToken = response.accessToken
                     completion(.success(accessToken))
                 } catch {
-                    completion(.failure(NetworkError.decodingError(error)))
                     print("❌ Unable to decode data: \(error)")
+                    completion(.failure(NetworkError.decodingError(error)))
                 }
             case .failure(let error):
                 completion(.failure(error))

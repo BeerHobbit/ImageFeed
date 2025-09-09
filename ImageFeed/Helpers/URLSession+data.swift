@@ -14,8 +14,8 @@ extension URLSession {
         
         let task = dataTask(with: request) { data, response, error in
             if let error = error {
-                fulfillCompletionOnTheMainThread(.failure(NetworkError.urlRequestError(error)))
                 print("❌ URLRequest error: \(error)")
+                fulfillCompletionOnTheMainThread(.failure(NetworkError.urlRequestError(error)))
                 return
             }
             
@@ -23,15 +23,16 @@ extension URLSession {
                 let data = data,
                 let response = response as? HTTPURLResponse
             else {
-                fulfillCompletionOnTheMainThread(.failure(NetworkError.urlSessionError))
                 print("❌ Unknown URLSession error")
+                fulfillCompletionOnTheMainThread(.failure(NetworkError.urlSessionError))
                 return
             }
             
             let statusCode = response.statusCode
-            guard 200..<300 ~= statusCode else {
+            guard (200..<300).contains(statusCode) else {
+                let requestURL = request.url?.absoluteString ?? "unknown URL"
+                print("❌ Request to \(requestURL) failed with status code: \(statusCode)")
                 fulfillCompletionOnTheMainThread(.failure(NetworkError.httpStatusCode(statusCode)))
-                print("❌ Invalid HTTP status code: \(statusCode)")
                 return
             }
             
