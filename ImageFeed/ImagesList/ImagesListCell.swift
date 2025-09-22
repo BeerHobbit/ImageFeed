@@ -2,22 +2,22 @@ import UIKit
 
 final class ImagesListCell: UITableViewCell {
     
-    //MARK: - Identifier
+    // MARK: - Identifier
     
     static let reuseIdentifier = "ImagesListCell"
     
-    //MARK: - IB Outlets
+    // MARK: - IB Outlets
     
     @IBOutlet private weak var cellImageView: UIImageView!
     @IBOutlet private weak var likeButton: UIButton!
     @IBOutlet private weak var dateLabel: UILabel!
     @IBOutlet private weak var gradientView: UIView!
     
-    //MARK: - Private Properties
+    // MARK: - Private Properties
     
     private let gradientLayer = CAGradientLayer()
     
-    //MARK: - Overrides
+    // MARK: - Overrides
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -29,7 +29,7 @@ final class ImagesListCell: UITableViewCell {
         gradientLayer.frame = gradientView.bounds
     }
     
-    //MARK: - Cell Configuration Method
+    // MARK: - Cell Configuration Method
     
     func configure(image: UIImage?, date: String, isLiked: Bool) {
         cellImageView.image = image
@@ -38,7 +38,7 @@ final class ImagesListCell: UITableViewCell {
         likeButton.setImage(likeImage, for: .normal)
     }
     
-    //MARK: - UI Configuration Methods
+    // MARK: - UI Configuration Methods
     
     private func configCellUI() {
         configCornerRadius(for: cellImageView)

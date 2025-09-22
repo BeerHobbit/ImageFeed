@@ -2,18 +2,18 @@ import UIKit
 
 final class SingleImageViewController: UIViewController {
     
-    //MARK: - IB Outlets
+    // MARK: - IB Outlets
     
     @IBOutlet private weak var scrollView: UIScrollView!
     @IBOutlet private weak var imageView: UIImageView!
     @IBOutlet private weak var backwardButton: UIButton!
     @IBOutlet private weak var shareButton: UIButton!
     
-    //MARK: - Public Properties
+    // MARK: - Public Properties
     
     var image: UIImage?
     
-    //MARK: - Life Cycle
+    // MARK: - Life Cycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -21,7 +21,7 @@ final class SingleImageViewController: UIViewController {
         configImageInScrollView()
     }
     
-    //MARK: - Private Methods
+    // MARK: - Private Methods
     
     private func configScrollView() {
         scrollView.minimumZoomScale = 0.1
@@ -68,7 +68,7 @@ final class SingleImageViewController: UIViewController {
         present(shareMenu, animated: true, completion: nil)
     }
     
-    //MARK: - IB Actions
+    // MARK: - IB Actions
     
     @IBAction func didTapBackwardButton(_ sender: UIButton) {
         dismiss(animated: true, completion: nil)
@@ -80,7 +80,7 @@ final class SingleImageViewController: UIViewController {
     
 }
 
-//MARK: - UIScrollViewDelegate
+// MARK: - UIScrollViewDelegate
 
 extension SingleImageViewController: UIScrollViewDelegate {
     

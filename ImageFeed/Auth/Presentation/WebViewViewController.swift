@@ -3,57 +3,47 @@ import WebKit
 
 final class WebViewViewController: UIViewController {
     
-    //MARK: - IB Outlets
+    // MARK: - IB Outlets
     
     @IBOutlet private weak var webView: WKWebView!
     @IBOutlet weak var progressView: UIProgressView!
     
-    //MARK: - Delegate
+    // MARK: - Delegate
     
     weak var delegate: WebViewViewControllerDelegate?
     
-    //MARK: - Life Cycle
+    // MARK: - Private Properties
+    
+    private var estimatedProgressObservation: NSKeyValueObservation?
+    
+    // MARK: - Life Cycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
         configDependencies()
+        configObservation()
         loadAuthView()
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        addObserverToWebView()
-    }
-    
-    override func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
-        removeObserverFromWebView()
-    }
-    
-    //MARK: - Overrides
-    
-    override func observeValue(
-        forKeyPath keyPath: String?,
-        of object: Any?,
-        change: [NSKeyValueChangeKey : Any]?,
-        context: UnsafeMutableRawPointer?
-    ) {
-        if keyPath == #keyPath(WKWebView.estimatedProgress) {
-            updateProgress()
-        } else {
-            super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
-        }
-    }
-    
-    //MARK: - Private Methods
+    // MARK: - Private Methods
     
     private func configDependencies() {
         webView.navigationDelegate = self
     }
     
+    private func configObservation() {
+        estimatedProgressObservation = webView.observe(
+            \.estimatedProgress,
+             changeHandler: { [weak self] _, _ in
+                 guard let self = self else { return }
+                 self.updateProgress()
+             }
+        )
+    }
+    
     private func loadAuthView() {
-        guard var urlComponents = URLComponents(string: Constants.unsplashAuthorizeURLString) else {
-            print("❌ Failed to generate url component from unsplashAuthorizeURLString")
+        guard var urlComponents = URLComponents(string: UnsplashURLs.unsplashAuthorizeURLString) else {
+            print("❌ [loadAuthView] Failed to generate url component from unsplashAuthorizeURLString")
             return
         }
         
@@ -65,29 +55,12 @@ final class WebViewViewController: UIViewController {
         ]
         
         guard let url = urlComponents.url else {
-            print("❌ Failed to generate url from url components")
+            print("❌ [loadAuthView] Failed to generate url from url components")
             return
         }
         
         let request = URLRequest(url: url)
         webView.load(request)
-    }
-    
-    private func addObserverToWebView() {
-        webView.addObserver(
-            self,
-            forKeyPath: #keyPath(WKWebView.estimatedProgress),
-            options: .new,
-            context: nil
-        )
-    }
-    
-    private func removeObserverFromWebView() {
-        webView.removeObserver(
-            self,
-            forKeyPath: #keyPath(WKWebView.estimatedProgress),
-            context: nil
-        )
     }
     
     private func updateProgress() {
@@ -105,14 +78,14 @@ final class WebViewViewController: UIViewController {
         {
             return codeItem.value
         } else {
-            print("❌ Failed to find authorization code")
+            print("[code] Failed to find authorization code")
             return nil
         }
     }
     
 }
 
-//MARK: - WKNavigationDelegate
+// MARK: - WKNavigationDelegate
 
 extension WebViewViewController: WKNavigationDelegate {
     

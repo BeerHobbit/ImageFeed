@@ -2,11 +2,11 @@ import UIKit
 
 final class ImagesListViewController: UIViewController {
     
-    //MARK: - IB Outlets
+    // MARK: - IB Outlets
     
     @IBOutlet private var imagesTableView: UITableView!
     
-    //MARK: - Private Properties
+    // MARK: - Private Properties
     
     private let photoNames: [String] = (0..<20).map(String.init)
     private let singleImageSegueIdentifier = "ShowSingleImage"
@@ -18,7 +18,7 @@ final class ImagesListViewController: UIViewController {
         return formatter
     }()
     
-    //MARK: - Life Cycle
+    // MARK: - Life Cycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -26,7 +26,7 @@ final class ImagesListViewController: UIViewController {
         configUI()
     }
     
-    //MARK: - Overrides
+    // MARK: - Overrides
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         guard
@@ -40,7 +40,7 @@ final class ImagesListViewController: UIViewController {
         destination.image = UIImage(named: photoNames[indexPath.row])
     }
     
-    //MARK: - Private Methods
+    // MARK: - Private Methods
     
     private func configDependencies() {}  // Do to some next sprint
     
@@ -50,7 +50,7 @@ final class ImagesListViewController: UIViewController {
     
 }
 
-//MARK: - UITableViewDataSource
+// MARK: - UITableViewDataSource
 
 extension ImagesListViewController: UITableViewDataSource {
     
@@ -75,7 +75,7 @@ extension ImagesListViewController: UITableViewDataSource {
     
 }
 
-//MARK: - UITableViewDelegate
+// MARK: - UITableViewDelegate
 
 extension ImagesListViewController: UITableViewDelegate {
     
