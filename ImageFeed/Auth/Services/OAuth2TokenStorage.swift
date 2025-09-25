@@ -1,22 +1,44 @@
 import Foundation
+import SwiftKeychainWrapper
 
 final class OAuth2TokenStorage {
     
+    // MARK: - Singleton
+    
+    static let shared = OAuth2TokenStorage()
+    
+    // MARK: - Token
+    
     var token: String? {
         get {
-            let token = storage.string(forKey: Keys.accessToken.rawValue)
-            return token
+            return keychainWrapper.string(forKey: Keys.token)
         }
         set {
-            storage.set(newValue,forKey: Keys.accessToken.rawValue)
+            if let token = newValue {
+                let isSuccess = keychainWrapper.set(token, forKey: Keys.token)
+                guard isSuccess else {
+                    print("❌ [OAuth2TokenStorage] KeychainWrapper error: newValue was not set for key \(Keys.token)")
+                    return
+                }
+            } else {
+                let isRemoved = keychainWrapper.removeObject(forKey: Keys.token)
+                guard isRemoved else {
+                    print("❌ [OAuth2TokenStorage] KeychainWrapper error: value for key \(Keys.token) was not removed")
+                    return
+                }
+            }
         }
     }
     
-    private let storage: UserDefaults = .standard
+    // MARK: - Private Properties
     
-    private enum Keys: String {
-        case accessToken
+    private let keychainWrapper = KeychainWrapper.standard
+    private enum Keys {
+        static let token = "token"
     }
     
+    // MARK: - Initializer
+    
+    private init() {}
+    
 }
-

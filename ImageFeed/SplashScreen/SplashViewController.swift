@@ -44,7 +44,7 @@ final class SplashViewController: UIViewController {
     // MARK: - Private Methods
     
     private func configDependencies() {
-        storage = OAuth2TokenStorage()
+        storage = OAuth2TokenStorage.shared
         profileService = ProfileService.shared
         profileImageService = ProfileImageService.shared
     }

@@ -22,7 +22,6 @@ final class ImagesListViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        configDependencies()
         configUI()
     }
     
@@ -41,8 +40,6 @@ final class ImagesListViewController: UIViewController {
     }
     
     // MARK: - Private Methods
-    
-    private func configDependencies() {}  // Do to some next sprint
     
     private func configUI() {
         imagesTableView.contentInset = UIEdgeInsets(top: 12, left: 0, bottom: 12, right: 0)

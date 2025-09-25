@@ -77,7 +77,7 @@ extension AuthViewController: WebViewViewControllerDelegate {
             
             switch result {
             case .success(let accessToken):
-                let oauth2TokenStorage = OAuth2TokenStorage()
+                let oauth2TokenStorage = OAuth2TokenStorage.shared
                 oauth2TokenStorage.token = accessToken
                 print("Bearer Token: \(oauth2TokenStorage.token ?? "nil")")
                 self.delegate?.didAuthenticate(self)

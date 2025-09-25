@@ -1,4 +1,5 @@
 import UIKit
+import Kingfisher
 
 final class ProfileViewController: UIViewController {
     
@@ -6,9 +7,9 @@ final class ProfileViewController: UIViewController {
     
     private let userpickImageView: UIImageView = {
         let imageView = UIImageView()
-        let image = UIImage(named: "userpick_image_stub")
-        imageView.image = image
         imageView.contentMode = .scaleAspectFill
+        imageView.clipsToBounds = true
+        imageView.layer.cornerRadius = 35
         return imageView
     }()
     
@@ -84,7 +85,6 @@ final class ProfileViewController: UIViewController {
         setupObserver()
         updateProfileUI()
         updateAvatar()
-        
     }
     
     // MARK: - Configure Dependencies
@@ -158,7 +158,8 @@ final class ProfileViewController: UIViewController {
             let profileImageURL = ProfileImageService.shared.avatarURL,
             let url = URL(string: profileImageURL)
         else { return }
-        print("Profile image URL: \(profileImageURL)")
+        userpickImageView.kf.indicatorType = .activity
+        userpickImageView.kf.setImage(with: url, placeholder: UIImage(named: "userpick_image_stub"))
     }
 
 }
