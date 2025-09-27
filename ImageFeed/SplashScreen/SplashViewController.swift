@@ -2,12 +2,20 @@ import UIKit
 
 final class SplashViewController: UIViewController {
     
+    // MARK: - Views
+    
+    private let logoImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(named: "launch_screen_logo")
+        imageView.contentMode = .scaleAspectFit
+        return imageView
+    }()
+    
     // MARK: - Private Properties
     
     private var storage: OAuth2TokenStorage?
     private var profileService: ProfileService?
     private var profileImageService: ProfileImageService?
-    private let authScreenSegueIdentifier = "ShowAuthenticationScreen"
     private let tabBarStoryboardIdentifier = "TabBarViewController"
     
     // MARK: - Life Cycle
@@ -15,6 +23,8 @@ final class SplashViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         configDependencies()
+        configUI()
+        configConstraints()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -22,32 +32,35 @@ final class SplashViewController: UIViewController {
         checkTokenStorage()
     }
     
-    // MARK: - Overrides
-    
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        guard segue.identifier == authScreenSegueIdentifier else {
-            super.prepare(for: segue, sender: sender)
-            return
-        }
-        
-        guard
-            let destination = segue.destination as? UINavigationController,
-            let viewController = destination.viewControllers.first as? AuthViewController
-        else {
-            assertionFailure("❌ [prepare] Failed to prepare for \(authScreenSegueIdentifier)")
-            return
-        }
-        
-        viewController.delegate = self
-    }
-    
-    // MARK: - Private Methods
+    // MARK: - Configure Dependencies
     
     private func configDependencies() {
         storage = OAuth2TokenStorage.shared
         profileService = ProfileService.shared
         profileImageService = ProfileImageService.shared
     }
+    
+    // MARK: - Configure UI
+    
+    private func configUI() {
+        view.backgroundColor = .ypBlack
+        view.addSubview(logoImageView)
+    }
+    
+    // MARK: - Configure Constraints
+    
+    private func configConstraints() {
+        logoImageView.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate(
+            [
+                logoImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+                logoImageView.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+            ]
+        )
+    }
+    
+    // MARK: - Private Methods
     
     private func checkTokenStorage() {
         let token = storage?.token
@@ -58,8 +71,24 @@ final class SplashViewController: UIViewController {
             }
             fetchProfile(token: token)
         } else {
-            performSegue(withIdentifier: authScreenSegueIdentifier, sender: nil)
+            presentAuthNavigationController()
         }
+    }
+    
+    private func presentAuthNavigationController() {
+        let storyboard = UIStoryboard(name: "Main", bundle: .main)
+        let identifier = "AuthNavigationController"
+        guard let navigationController = storyboard.instantiateViewController(withIdentifier: identifier) as? UINavigationController else {
+            print("❌ [presentAuthNavigationController] Navigation controller with identifier \"\(identifier)\" was not found")
+            return
+        }
+        guard let authViewController = navigationController.viewControllers.first as? AuthViewController else {
+            print("❌ [presentAuthNavigationController] First controller of UINavigationController is not AuthViewController")
+            return
+        }
+        authViewController.delegate = self
+        navigationController.modalPresentationStyle = .fullScreen
+        present(navigationController, animated: true)
     }
     
     private func switchToTabBarController() {
