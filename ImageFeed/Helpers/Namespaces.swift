@@ -14,3 +14,8 @@ enum UnsplashURLs {
     static let unsplashUserProfileURLString = "https://api.unsplash.com/me"
     static let unsplashUserPublicProfileURLString = "https://api.unsplash.com/users/"
 }
+
+enum HttpMethods {
+    static let get = "GET"
+    static let post = "POST"
+}

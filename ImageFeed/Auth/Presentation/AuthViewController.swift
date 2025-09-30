@@ -50,8 +50,8 @@ final class AuthViewController: UIViewController {
     }
     
     private func configureBackButton() {
-        navigationController?.navigationBar.backIndicatorImage = UIImage(named: "nav_back_button")
-        navigationController?.navigationBar.backIndicatorTransitionMaskImage = UIImage(named: "nav_back_button")
+        navigationController?.navigationBar.backIndicatorImage = UIImage(resource: .navBackButton)
+        navigationController?.navigationBar.backIndicatorTransitionMaskImage = UIImage(resource: .navBackButton)
         navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
         navigationItem.backBarButtonItem?.tintColor = .ypBlack
     }
@@ -72,7 +72,10 @@ extension AuthViewController: WebViewViewControllerDelegate {
         UIBlockingProgressHUD.show()
         
         oauth2Service?.fetchOAuthToken(code: code) { [weak self] result in
-            guard let self = self else { return }
+            guard let self = self else {
+                UIBlockingProgressHUD.dismiss()
+                return
+            }
             UIBlockingProgressHUD.dismiss()
             
             switch result {

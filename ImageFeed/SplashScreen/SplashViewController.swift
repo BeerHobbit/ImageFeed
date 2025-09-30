@@ -6,7 +6,7 @@ final class SplashViewController: UIViewController {
     
     private let logoImageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.image = UIImage(named: "launch_screen_logo")
+        imageView.image = UIImage(resource: .launchScreenLogo)
         imageView.contentMode = .scaleAspectFit
         return imageView
     }()

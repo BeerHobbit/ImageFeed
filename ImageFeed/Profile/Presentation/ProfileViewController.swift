@@ -15,7 +15,7 @@ final class ProfileViewController: UIViewController {
     
     private let logoutButton: UIButton = {
         let button = UIButton()
-        let buttonImage = UIImage(named: "logout_button")
+        let buttonImage = UIImage(resource: .logoutButton)
         button.setImage(buttonImage, for: .normal)
         button.tintColor = .ypRed
         return button
@@ -159,7 +159,7 @@ final class ProfileViewController: UIViewController {
             let url = URL(string: profileImageURL)
         else { return }
         userpickImageView.kf.indicatorType = .activity
-        userpickImageView.kf.setImage(with: url, placeholder: UIImage(named: "userpick_image_stub"))
+        userpickImageView.kf.setImage(with: url, placeholder: UIImage(resource: .userpickImageStub))
     }
 
 }

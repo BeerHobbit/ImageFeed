@@ -41,10 +41,10 @@ final class ProfileImageService {
                 self.avatarURL = avatarURL
                 completion(.success(avatarURL))
                 NotificationCenter.default.post(
-                        name: ProfileImageService.didChangeNotification,
-                        object: self,
-                        userInfo: ["URL": avatarURL]
-                    )
+                    name: ProfileImageService.didChangeNotification,
+                    object: self,
+                    userInfo: ["URL": avatarURL]
+                )
             case .failure(let error):
                 completion(.failure(error))
             }
@@ -64,7 +64,7 @@ final class ProfileImageService {
         }
         
         var request = URLRequest(url: publicProfileURL)
-        request.httpMethod = "GET"
+        request.httpMethod = HttpMethods.get
         request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
         return request
     }

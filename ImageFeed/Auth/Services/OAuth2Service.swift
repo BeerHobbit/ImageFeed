@@ -75,7 +75,7 @@ final class OAuth2Service {
         }
         
         var request = URLRequest(url: authTokenURL)
-        request.httpMethod = "POST"
+        request.httpMethod = HttpMethods.post
         return request
     }
     
