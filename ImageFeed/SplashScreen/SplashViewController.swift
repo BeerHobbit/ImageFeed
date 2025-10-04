@@ -16,7 +16,6 @@ final class SplashViewController: UIViewController {
     private var storage: OAuth2TokenStorage?
     private var profileService: ProfileService?
     private var profileImageService: ProfileImageService?
-    private let tabBarStoryboardIdentifier = "TabBarViewController"
     
     // MARK: - Life Cycle
     
@@ -65,10 +64,7 @@ final class SplashViewController: UIViewController {
     private func checkTokenStorage() {
         let token = storage?.token
         if token != nil {
-            guard let token = token else {
-                print("❌ [checkTokenStorage] Token does not exist")
-                return
-            }
+            guard let token = token else { return }
             fetchProfile(token: token)
         } else {
             presentAuthNavigationController()
@@ -76,17 +72,9 @@ final class SplashViewController: UIViewController {
     }
     
     private func presentAuthNavigationController() {
-        let storyboard = UIStoryboard(name: "Main", bundle: .main)
-        let identifier = "AuthNavigationController"
-        guard let navigationController = storyboard.instantiateViewController(withIdentifier: identifier) as? UINavigationController else {
-            print("❌ [presentAuthNavigationController] Navigation controller with identifier \"\(identifier)\" was not found")
-            return
-        }
-        guard let authViewController = navigationController.viewControllers.first as? AuthViewController else {
-            print("❌ [presentAuthNavigationController] First controller of UINavigationController is not AuthViewController")
-            return
-        }
+        let authViewController = AuthViewController()
         authViewController.delegate = self
+        let navigationController = AuthNavigationController(rootViewController: authViewController)
         navigationController.modalPresentationStyle = .fullScreen
         present(navigationController, animated: true)
     }
@@ -96,7 +84,7 @@ final class SplashViewController: UIViewController {
             assertionFailure("❌ [switchToTabBarController] Invalid window configuration")
             return
         }
-        let tabBarController = UIStoryboard(name: "Main", bundle: .main).instantiateViewController(withIdentifier: tabBarStoryboardIdentifier)
+        let tabBarController = MainTabBarController()
         window.rootViewController = tabBarController
     }
     

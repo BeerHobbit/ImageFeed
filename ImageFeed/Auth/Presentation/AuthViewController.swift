@@ -3,10 +3,27 @@ import ProgressHUD
 
 final class AuthViewController: UIViewController {
     
-    // MARK: - IB Outlets
+    // MARK: - Views
     
-    @IBOutlet private weak var logoImageView: UIImageView!
-    @IBOutlet private weak var loginButton: UIButton!
+    private let logoImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(resource: .unsplashLogo)
+        imageView.contentMode = .scaleAspectFit
+        return imageView
+    }()
+    
+    private let loginButton: UIButton = {
+        let button = UIButton()
+        button.backgroundColor = .ypWhite
+        button.layer.cornerRadius = 16
+        button.layer.masksToBounds = true
+        
+        button.setTitle("Войти", for: .normal)
+        button.setTitleColor(.ypBlack, for: .normal)
+        button.titleLabel?.font = .systemFont(ofSize: 17, weight: .bold)
+        
+        return button
+    }()
     
     // MARK: - Delegate
     
@@ -14,7 +31,7 @@ final class AuthViewController: UIViewController {
     
     // MARK: - Private Propeties
     
-    private let authWebViewSegueIdentifier = "ShowWebView"
+    private var webViewViewController: WebViewViewController?
     private var oauth2Service: OAuth2Service?
     
     // MARK: - Life Cycle
@@ -23,41 +40,64 @@ final class AuthViewController: UIViewController {
         super.viewDidLoad()
         configDependencies()
         configUI()
+        configConstraints()
+        configActions()
     }
     
-    // MARK: - Overrides
+    // MARK: - Configure UI
     
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        guard segue.identifier == authWebViewSegueIdentifier else {
-            super.prepare(for: segue, sender: sender)
-            return
-        }
+    private func configUI() {
+        view.backgroundColor = .ypBlack
+        view.addSubview(logoImageView)
+        view.addSubview(loginButton)
+    }
+    
+    // MARK: - Configure Constraints
+    
+    private func configConstraints() {
+        logoImageView.translatesAutoresizingMaskIntoConstraints = false
+        loginButton.translatesAutoresizingMaskIntoConstraints = false
         
-        guard let destination = segue.destination as? WebViewViewController else {
-            assertionFailure("❌ [prepare] Failed to prepare for \(authWebViewSegueIdentifier)")
-            return
-        }
-        
-        destination.delegate = self
+        NSLayoutConstraint.activate(
+            [
+                logoImageView.widthAnchor.constraint(equalToConstant: 60),
+                logoImageView.heightAnchor.constraint(equalToConstant: 60),
+                logoImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+                logoImageView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+                
+                loginButton.heightAnchor.constraint(equalToConstant: 48),
+                loginButton.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
+                loginButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
+                loginButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -90)
+            ]
+        )
+    }
+    
+    // MARK: - Configure Actions
+    
+    private func configActions() {
+        loginButton.addTarget(self, action: #selector(didTapLoginButton), for: .touchUpInside)
+    }
+    
+    // MARK: - Actions
+    
+    @objc
+    private func didTapLoginButton() {
+        pushToWebViewViewController()
     }
     
     // MARK: - Private Methods
     
-    private func configUI() {
-        loginButton.layer.cornerRadius = 16
-        loginButton.layer.masksToBounds = true
-        configureBackButton()
-    }
-    
-    private func configureBackButton() {
-        navigationController?.navigationBar.backIndicatorImage = UIImage(resource: .navBackButton)
-        navigationController?.navigationBar.backIndicatorTransitionMaskImage = UIImage(resource: .navBackButton)
-        navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
-        navigationItem.backBarButtonItem?.tintColor = .ypBlack
-    }
-    
     private func configDependencies() {
         oauth2Service = OAuth2Service.shared
+        webViewViewController = WebViewViewController()
+        guard let webViewViewController = webViewViewController else { return }
+        webViewViewController.delegate = self
+    }
+    
+    private func pushToWebViewViewController() {
+        guard let webViewViewController = webViewViewController else { return }
+        navigationController?.pushViewController(webViewViewController, animated: true)
     }
     
 }

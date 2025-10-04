@@ -3,14 +3,26 @@ import WebKit
 
 final class WebViewViewController: UIViewController {
     
-    // MARK: - IB Outlets
-    
-    @IBOutlet private weak var webView: WKWebView!
-    @IBOutlet weak var progressView: UIProgressView!
-    
     // MARK: - Delegate
     
     weak var delegate: WebViewViewControllerDelegate?
+    
+    // MARK: - Views
+    
+    private let webView: WKWebView = {
+        let webView = WKWebView()
+        webView.backgroundColor = .ypWhite
+        return webView
+    }()
+    
+    private let progressView: UIProgressView = {
+        let progressView = UIProgressView()
+        progressView.progressViewStyle = .bar
+        progressView.progress = 0.05
+        progressView.progressTintColor = .ypBlack
+        progressView.trackTintColor = .ypGray
+        return progressView
+    }()
     
     // MARK: - Private Properties
     
@@ -21,8 +33,38 @@ final class WebViewViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         configDependencies()
+        configUI()
+        configConstraints()
         configObservation()
         loadAuthView()
+    }
+    
+    //MARK: - Configure UI
+    
+    private func configUI() {
+        view.backgroundColor = .ypWhite
+        view.addSubview(webView)
+        view.addSubview(progressView)
+    }
+    
+    // MARK: - Configure Constraints
+    
+    private func configConstraints() {
+        webView.translatesAutoresizingMaskIntoConstraints = false
+        progressView.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate(
+            [
+                webView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+                webView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                webView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                webView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+                
+                progressView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                progressView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                progressView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor)
+            ]
+        )
     }
     
     // MARK: - Private Methods
