@@ -2,68 +2,119 @@ import UIKit
 
 final class SplashViewController: UIViewController {
     
-    //MARK: - Private Properties
+    // MARK: - Views
     
-    private let storage = OAuth2TokenStorage()
-    private let authScreenSegueIdentifier = "ShowAuthenticationScreen"
-    private let tabBarStoryboardIdentifier = "TabBarViewController"
+    private let logoImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(resource: .launchScreenLogo)
+        imageView.contentMode = .scaleAspectFit
+        return imageView
+    }()
     
-    //MARK: - Life Cycle
+    // MARK: - Private Properties
+    
+    private var storage: OAuth2TokenStorage?
+    private var profileService: ProfileService?
+    private var profileImageService: ProfileImageService?
+    
+    // MARK: - Life Cycle
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        configDependencies()
+        configUI()
+        configConstraints()
+    }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         checkTokenStorage()
     }
     
-    //MARK: - Overrides
+    // MARK: - Configure Dependencies
     
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        guard segue.identifier == authScreenSegueIdentifier else {
-            super.prepare(for: segue, sender: sender)
-            return
-        }
-        
-        guard
-            let destination = segue.destination as? UINavigationController,
-            let viewController = destination.viewControllers.first as? AuthViewController
-        else {
-            assertionFailure("❌ Failed to prepare for \(authScreenSegueIdentifier)")
-            return
-        }
-        
-        viewController.delegate = self
+    private func configDependencies() {
+        storage = OAuth2TokenStorage.shared
+        profileService = ProfileService.shared
+        profileImageService = ProfileImageService.shared
     }
     
-    //MARK: - Private Methods
+    // MARK: - Configure UI
+    
+    private func configUI() {
+        view.backgroundColor = .ypBlack
+        view.addSubview(logoImageView)
+    }
+    
+    // MARK: - Configure Constraints
+    
+    private func configConstraints() {
+        logoImageView.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate(
+            [
+                logoImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+                logoImageView.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+            ]
+        )
+    }
+    
+    // MARK: - Private Methods
     
     private func checkTokenStorage() {
-        if storage.token != nil {
-           switchToTabBarController()
+        let token = storage?.token
+        if token != nil {
+            guard let token = token else { return }
+            fetchProfile(token: token)
         } else {
-            performSegue(withIdentifier: authScreenSegueIdentifier, sender: nil)
+            presentAuthNavigationController()
         }
+    }
+    
+    private func presentAuthNavigationController() {
+        let authViewController = AuthViewController()
+        authViewController.delegate = self
+        let navigationController = AuthNavigationController(rootViewController: authViewController)
+        navigationController.modalPresentationStyle = .fullScreen
+        present(navigationController, animated: true)
     }
     
     private func switchToTabBarController() {
         guard let window = UIApplication.shared.windows.first else {
-            assertionFailure("❌ Invalid window configuration")
+            assertionFailure("❌ [switchToTabBarController] Invalid window configuration")
             return
         }
-        let tabBarController = UIStoryboard(name: "Main", bundle: .main).instantiateViewController(withIdentifier: tabBarStoryboardIdentifier)
+        let tabBarController = MainTabBarController()
         window.rootViewController = tabBarController
+    }
+    
+    private func fetchProfile(token: String) {
+        UIBlockingProgressHUD.show()
+        profileService?.fetchProfile(token) { [weak self] result in
+            UIBlockingProgressHUD.dismiss()
+            guard let self = self else { return }
+            
+            switch result {
+            case .success(let profile):
+                let username = profile.username
+                profileImageService?.fetchProfileImageURL(token, username: username) { _ in }
+                self.switchToTabBarController()
+            case .failure(let error):
+                print(error)
+                self.showErrorAlert()
+                break
+            }
+        }
     }
     
 }
 
-//MARK: - AuthViewControllerDelegate
+// MARK: - AuthViewControllerDelegate
 
 extension SplashViewController: AuthViewControllerDelegate {
     
     func didAuthenticate(_ vc: AuthViewController) {
-        vc.navigationController?.dismiss(animated: true) { [weak self] in
-            guard let self else { return }
-            self.switchToTabBarController()
-        }
+        vc.navigationController?.dismiss(animated: true)
     }
-
+    
 }

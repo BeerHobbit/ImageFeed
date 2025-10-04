@@ -2,14 +2,19 @@ import UIKit
 
 final class ImagesListViewController: UIViewController {
     
-    //MARK: - IB Outlets
+    // MARK: - Views
     
-    @IBOutlet private var imagesTableView: UITableView!
+    private let imagesTableView: UITableView = {
+        let tableView = UITableView()
+        tableView.backgroundColor = .ypBlack
+        tableView.contentInset = UIEdgeInsets(top: 12, left: 0, bottom: 12, right: 0)
+        tableView.register(ImagesListCell.self, forCellReuseIdentifier: ImagesListCell.reuseIdentifier)
+        return tableView
+    }()
     
-    //MARK: - Private Properties
+    // MARK: - Private Properties
     
     private let photoNames: [String] = (0..<20).map(String.init)
-    private let singleImageSegueIdentifier = "ShowSingleImage"
     
     private lazy var dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -18,39 +23,57 @@ final class ImagesListViewController: UIViewController {
         return formatter
     }()
     
-    //MARK: - Life Cycle
+    // MARK: - Life Cycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
         configDependencies()
         configUI()
+        configConstraints()
     }
     
-    //MARK: - Overrides
+    // MARK: - Configure Dependencies
     
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        guard
-            segue.identifier == singleImageSegueIdentifier,
-            let destination  = segue.destination as? SingleImageViewController,
-            let indexPath = sender as? IndexPath
-        else {
-            super.prepare(for: segue, sender: sender)
-            return
-        }
-        destination.image = UIImage(named: photoNames[indexPath.row])
+    private func configDependencies() {
+        imagesTableView.dataSource = self
+        imagesTableView.delegate = self
     }
     
-    //MARK: - Private Methods
-    
-    private func configDependencies() {}  // Do to some next sprint
+    // MARK: - Configure UI
     
     private func configUI() {
-        imagesTableView.contentInset = UIEdgeInsets(top: 12, left: 0, bottom: 12, right: 0)
+        view.backgroundColor = .ypBlack
+        view.addSubview(imagesTableView)
+    }
+    
+    // MARK: - Config Constraints
+    
+    private func configConstraints() {
+        imagesTableView.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate(
+            [
+                imagesTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                imagesTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                imagesTableView.topAnchor.constraint(equalTo: view.topAnchor),
+                imagesTableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            ]
+        )
+    }
+    
+    // MARK: - Private Methods
+    
+    private func presentSingleImageViewController(indexPath: IndexPath) {
+        let singleImageViewController = SingleImageViewController()
+        singleImageViewController.image = UIImage(named: photoNames[indexPath.row])
+        singleImageViewController.modalPresentationStyle = .fullScreen
+        singleImageViewController.modalTransitionStyle = .crossDissolve
+        present(singleImageViewController, animated: true)
     }
     
 }
 
-//MARK: - UITableViewDataSource
+// MARK: - UITableViewDataSource
 
 extension ImagesListViewController: UITableViewDataSource {
     
@@ -75,12 +98,12 @@ extension ImagesListViewController: UITableViewDataSource {
     
 }
 
-//MARK: - UITableViewDelegate
+// MARK: - UITableViewDelegate
 
 extension ImagesListViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        performSegue(withIdentifier: singleImageSegueIdentifier, sender: indexPath)
+        presentSingleImageViewController(indexPath: indexPath)
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {

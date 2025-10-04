@@ -1,20 +1,21 @@
 import UIKit
+import Kingfisher
 
 final class ProfileViewController: UIViewController {
     
-    //MARK: - Views
+    // MARK: - Views
     
     private let userpickImageView: UIImageView = {
         let imageView = UIImageView()
-        let image = UIImage(named: "userpick")
-        imageView.image = image
         imageView.contentMode = .scaleAspectFill
+        imageView.clipsToBounds = true
+        imageView.layer.cornerRadius = 35
         return imageView
     }()
     
     private let logoutButton: UIButton = {
         let button = UIButton()
-        let buttonImage = UIImage(named: "logout_button")
+        let buttonImage = UIImage(resource: .logoutButton)
         button.setImage(buttonImage, for: .normal)
         button.tintColor = .ypRed
         return button
@@ -22,7 +23,6 @@ final class ProfileViewController: UIViewController {
     
     private let usernameLabel: UILabel = {
         let label = UILabel()
-        label.text = "Екатерина Новикова"
         label.font = .systemFont(ofSize: 23, weight: .bold)
         label.textColor = .ypWhite
         return label
@@ -30,7 +30,6 @@ final class ProfileViewController: UIViewController {
     
     private let loginLabel: UILabel = {
         let label = UILabel()
-        label.text = "@ekaterina_nov"
         label.font = .systemFont(ofSize: 13, weight: .regular)
         label.textColor = .ypGray
         return label
@@ -38,7 +37,6 @@ final class ProfileViewController: UIViewController {
     
     private let profileDescriptionLabel: UILabel = {
         let label = UILabel()
-        label.text = "Hello, world!"
         label.font = .systemFont(ofSize: 13, weight: .regular)
         label.textColor = .ypWhite
         return label
@@ -71,23 +69,38 @@ final class ProfileViewController: UIViewController {
         return stack
     }()
     
-    //MARK: - Life Cycle
+    // MARK: - Private Properties
+    
+    private var profileService: ProfileService?
+    private var profileImageServiceObserver: NSObjectProtocol?
+    
+    // MARK: - Life Cycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        configDependencies()
         configUI()
         configConstraints()
         configActions()
+        setupObserver()
+        updateProfileUI()
+        updateAvatar()
     }
     
-    //MARK: - Configure UI
+    // MARK: - Configure Dependencies
+    
+    private func configDependencies() {
+        profileService = ProfileService.shared
+    }
+    
+    // MARK: - Configure UI
     
     private func configUI() {
         view.backgroundColor = .ypBlack
         view.addSubview(vStack)
     }
     
-    //MARK: - Configure Constraints
+    // MARK: - Configure Constraints
     
     private func configConstraints() {
         userpickImageView.translatesAutoresizingMaskIntoConstraints = false
@@ -109,16 +122,45 @@ final class ProfileViewController: UIViewController {
         )
     }
     
-    //MARK: - Configure Actions
+    // MARK: - Configure Actions
     
     private func configActions() {
         logoutButton.addTarget(self, action: #selector (didTapLogoutButton(_:)), for: .touchUpInside)
     }
     
-    //MARK: - Actions
+    // MARK: - Actions
     
     @objc
-    private func didTapLogoutButton(_ sender: UIButton) {} // Do to some next sprint
+    private func didTapLogoutButton(_ sender: UIButton) {} // TODO: add an action to the button
     
+    // MARK: - Private Methods
+    
+    private func updateProfileUI() {
+        guard let profile = profileService?.profile else { return }
+        usernameLabel.text = profile.name
+        loginLabel.text = profile.loginName
+        profileDescriptionLabel.text = profile.bio
+    }
+    
+    private func setupObserver() {
+        profileImageServiceObserver = NotificationCenter.default.addObserver(
+            forName: ProfileImageService.didChangeNotification,
+            object: nil,
+            queue: .main,
+        ) { [weak self] _ in
+            guard let self = self else { return }
+            self.updateAvatar()
+        }
+    }
+    
+    private func updateAvatar() {
+        guard
+            let profileImageURL = ProfileImageService.shared.avatarURL,
+            let url = URL(string: profileImageURL)
+        else { return }
+        userpickImageView.kf.indicatorType = .activity
+        userpickImageView.kf.setImage(with: url, placeholder: UIImage(resource: .userpickImageStub))
+    }
+
 }
 

@@ -1,98 +1,133 @@
 import UIKit
+import ProgressHUD
 
 final class AuthViewController: UIViewController {
     
-    //MARK: - IB Outlets
+    // MARK: - Views
     
-    @IBOutlet private weak var logoImageView: UIImageView!
-    @IBOutlet private weak var loginButton: UIButton!
+    private let logoImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(resource: .unsplashLogo)
+        imageView.contentMode = .scaleAspectFit
+        return imageView
+    }()
     
-    //MARK: - Delegate
+    private let loginButton: UIButton = {
+        let button = UIButton()
+        button.backgroundColor = .ypWhite
+        button.layer.cornerRadius = 16
+        button.layer.masksToBounds = true
+        
+        button.setTitle("Войти", for: .normal)
+        button.setTitleColor(.ypBlack, for: .normal)
+        button.titleLabel?.font = .systemFont(ofSize: 17, weight: .bold)
+        
+        return button
+    }()
+    
+    // MARK: - Delegate
     
     weak var delegate: AuthViewControllerDelegate?
     
-    //MARK: - Private Propeties
+    // MARK: - Private Propeties
     
-    private let authWebViewSegueIdentifier = "ShowWebView"
+    private var webViewViewController: WebViewViewController?
     private var oauth2Service: OAuth2Service?
     
-    //MARK: - Life Cycle
+    // MARK: - Life Cycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
         configDependencies()
         configUI()
+        configConstraints()
+        configActions()
     }
     
-    //MARK: - Overrides
-    
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        guard segue.identifier == authWebViewSegueIdentifier else {
-            super.prepare(for: segue, sender: sender)
-            return
-        }
-        
-        guard let destination = segue.destination as? WebViewViewController else {
-            assertionFailure("❌ Failed to prepare for \(authWebViewSegueIdentifier)")
-            return
-        }
-        
-        destination.delegate = self
-    }
-    
-    //MARK: - Private Methods
+    // MARK: - Configure UI
     
     private func configUI() {
-        loginButton.layer.cornerRadius = 16
-        loginButton.layer.masksToBounds = true
-        configureBackButton()
+        view.backgroundColor = .ypBlack
+        view.addSubview(logoImageView)
+        view.addSubview(loginButton)
     }
     
-    private func configureBackButton() {
-        navigationController?.navigationBar.backIndicatorImage = UIImage(named: "nav_back_button")
-        navigationController?.navigationBar.backIndicatorTransitionMaskImage = UIImage(named: "nav_back_button")
-        navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
-        navigationItem.backBarButtonItem?.tintColor = .ypBlack
+    // MARK: - Configure Constraints
+    
+    private func configConstraints() {
+        logoImageView.translatesAutoresizingMaskIntoConstraints = false
+        loginButton.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate(
+            [
+                logoImageView.widthAnchor.constraint(equalToConstant: 60),
+                logoImageView.heightAnchor.constraint(equalToConstant: 60),
+                logoImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+                logoImageView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+                
+                loginButton.heightAnchor.constraint(equalToConstant: 48),
+                loginButton.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
+                loginButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
+                loginButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -90)
+            ]
+        )
     }
+    
+    // MARK: - Configure Actions
+    
+    private func configActions() {
+        loginButton.addTarget(self, action: #selector(didTapLoginButton), for: .touchUpInside)
+    }
+    
+    // MARK: - Actions
+    
+    @objc
+    private func didTapLoginButton() {
+        pushToWebViewViewController()
+    }
+    
+    // MARK: - Private Methods
     
     private func configDependencies() {
         oauth2Service = OAuth2Service.shared
+        webViewViewController = WebViewViewController()
+        guard let webViewViewController = webViewViewController else { return }
+        webViewViewController.delegate = self
     }
     
-    private func presentErrorAlert() {
-        let alert = UIAlertController(
-            title: "Что-то пошло не так(",
-            message: "Не удалось войти в систему",
-            preferredStyle: .alert
-        )
-        let action = UIAlertAction(title: "OK", style: .default)
-        alert.addAction(action)
-        self.present(alert, animated: true, completion: nil)
+    private func pushToWebViewViewController() {
+        guard let webViewViewController = webViewViewController else { return }
+        navigationController?.pushViewController(webViewViewController, animated: true)
     }
     
 }
 
-//MARK: - WebViewViewControllerDelegate
+// MARK: - WebViewViewControllerDelegate
 
 extension AuthViewController: WebViewViewControllerDelegate {
     
     func webViewViewController(_ vc: WebViewViewController, didAuthenticateWithCode code: String) {
         vc.navigationController?.popViewController(animated: true)
         print("Code: \(code)")
+        UIBlockingProgressHUD.show()
         
         oauth2Service?.fetchOAuthToken(code: code) { [weak self] result in
-            guard let self = self else { return }
+            guard let self = self else {
+                UIBlockingProgressHUD.dismiss()
+                return
+            }
+            UIBlockingProgressHUD.dismiss()
             
             switch result {
             case .success(let accessToken):
-                let oauth2TokenStorage = OAuth2TokenStorage()
+                let oauth2TokenStorage = OAuth2TokenStorage.shared
                 oauth2TokenStorage.token = accessToken
                 print("Bearer Token: \(oauth2TokenStorage.token ?? "nil")")
                 self.delegate?.didAuthenticate(self)
                 
             case .failure(let error):
-                self.presentErrorAlert()
                 print(error)
+                self.showErrorAlert()
             }
         }
     }
