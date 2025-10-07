@@ -121,4 +121,8 @@ extension ImagesListViewController: UITableViewDelegate {
         return cellHeight
     }
     
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        
+    }
+    
 }

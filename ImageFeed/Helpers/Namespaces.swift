@@ -5,7 +5,7 @@ enum Constants {
     static let secretKey = "UwqIy5U2zgVBKw3AZbKOnXVfyVw3purP6KHyqW9aVWk"
     static let redirectURI = "urn:ietf:wg:oauth:2.0:oob"
     static let accessScope = "public+read_user+write_likes"
-    static let defaultBaseURL = URL(string: "https://api.unsplash.com/")
+    static let defaultBaseURL = URL(string: "https://api.unsplash.com")
 }
 
 enum UnsplashURLs {
@@ -13,6 +13,10 @@ enum UnsplashURLs {
     static let unsplashTokenRequestURLString = "https://unsplash.com/oauth/token"
     static let unsplashUserProfileURLString = "https://api.unsplash.com/me"
     static let unsplashUserPublicProfileURLString = "https://api.unsplash.com/users/"
+}
+
+enum UnsplashPaths {
+    static let photos = "/photos"
 }
 
 enum HttpMethods {
