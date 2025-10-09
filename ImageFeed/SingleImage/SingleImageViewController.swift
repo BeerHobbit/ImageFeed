@@ -4,7 +4,7 @@ final class SingleImageViewController: UIViewController {
     
     // MARK: - Public Properties
     
-    var image: UIImage?
+    var imageURL: URL?
     
     // MARK: - Views
     
@@ -104,16 +104,22 @@ final class SingleImageViewController: UIViewController {
     
     private func configScrollView() {
         scrollView.addSubview(imageView)
-        scrollView.minimumZoomScale = 0.1
+        scrollView.minimumZoomScale = 0.01
         scrollView.maximumZoomScale = 1.25
         configImageInScrollView()
     }
     
     private func configImageInScrollView() {
-        guard let image = image else { return }
-        imageView.image = image
-        imageView.frame.size = image.size
-        rescaleAndCenterImageInScrollView(image: image)
+        guard let url = imageURL else { return }
+        UIBlockingProgressHUD.show(isBlockingUI: false)
+        imageView.kf.setImage(with: url) { [weak self] _ in
+            UIBlockingProgressHUD.dismiss()
+            guard
+                let self = self,
+                let image = self.imageView.image else { return }
+            self.imageView.frame.size = image.size
+            rescaleAndCenterImageInScrollView(image: image)
+        }
     }
     
     private func  rescaleAndCenterImageInScrollView(image: UIImage) {
@@ -140,7 +146,7 @@ final class SingleImageViewController: UIViewController {
     }
     
     private func presentShareMenu() {
-        guard let image = image else { return }
+        guard let image = imageView.image else { return }
         let shareMenu = UIActivityViewController(
             activityItems: [image],
             applicationActivities: nil

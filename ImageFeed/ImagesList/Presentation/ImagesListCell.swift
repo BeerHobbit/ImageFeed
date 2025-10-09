@@ -6,10 +6,6 @@ final class ImagesListCell: UITableViewCell {
     
     static let reuseIdentifier = "ImagesListCell"
     
-    // MARK: - Delegate
-    
-    weak var delegate: ImagesListCellDelegate?
-    
     // MARK: - Views
     
     private let cellImageView: UIImageView = {
@@ -57,6 +53,7 @@ final class ImagesListCell: UITableViewCell {
         let formatter = DateFormatter()
         formatter.dateStyle = .long
         formatter.timeStyle = .none
+        formatter.locale = Locale(identifier: "ru_RU")
         return formatter
     }()
     
@@ -87,15 +84,12 @@ final class ImagesListCell: UITableViewCell {
     // MARK: - Cell Configuration Public Method
     
     func configureCell(photo: Photo) {
-        guard let imageURL = URL(string: photo.thumbImageURL) else {
+        guard let imageURL = URL(string: photo.smallImageURL) else {
             print("❌ [configureCell] incorrect image URL")
             return
         }
         cellImageView.kf.indicatorType = .activity
-        cellImageView.kf.setImage(with: imageURL, placeholder: UIImage(resource: .placeholder)) { [weak self] _ in
-            guard let self = self else { return }
-            self.delegate?.reloadRow(for: self)
-        }
+        cellImageView.kf.setImage(with: imageURL, placeholder: UIImage(resource: .placeholder))
         
         let date = photo.createdAt ?? Date()
         let dateString = ImagesListCell.dateFormatter.string(from: date)

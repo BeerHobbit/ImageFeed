@@ -18,13 +18,6 @@ final class ImagesListViewController: UIViewController {
     private var photos: [Photo] = []
     private var imagesListServiceObserver: NSObjectProtocol?
     
-    private lazy var dateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .long
-        formatter.timeStyle = .none
-        return formatter
-    }()
-    
     // MARK: - Life Cycle
     
     override func viewDidLoad() {
@@ -71,15 +64,14 @@ final class ImagesListViewController: UIViewController {
     private func downloadPhotos() {
         UIBlockingProgressHUD.show(isBlockingUI: false)
         imagesListService?.fetchPhotosNextPage { [weak self] result in
+            UIBlockingProgressHUD.dismiss()
             guard let self = self else {
-                UIBlockingProgressHUD.dismiss()
                 return
             }
             switch result {
             case .success(_):
-                UIBlockingProgressHUD.dismiss()
+                break
             case .failure(_):
-                UIBlockingProgressHUD.dismiss()
                 self.showErrorAlert()
             }
         }
@@ -92,7 +84,7 @@ final class ImagesListViewController: UIViewController {
         }
         
         let singleImageViewController = SingleImageViewController()
-        singleImageViewController.image = UIImage(resource: ._0)
+        singleImageViewController.imageURL = imageURL
         singleImageViewController.modalPresentationStyle = .fullScreen
         singleImageViewController.modalTransitionStyle = .crossDissolve
         present(singleImageViewController, animated: true)
@@ -114,10 +106,6 @@ final class ImagesListViewController: UIViewController {
         let oldCount = photos.count
         let newCount = imagesListService.photos.count
         photos = imagesListService.photos
-        
-        print("oldCount = \(oldCount), newCount = \(newCount)")
-        print("ids: \(photos.map { $0.id })")
-        
         if oldCount != newCount {
             imagesTableView.performBatchUpdates {
                 let indexPaths = (oldCount..<newCount).map { i in
@@ -145,7 +133,6 @@ extension ImagesListViewController: UITableViewDataSource {
         }
         
         let photo = photos[indexPath.row]
-        imageListCell.delegate = self
         imageListCell.configureCell(photo: photo)
         
         return imageListCell
@@ -179,15 +166,6 @@ extension ImagesListViewController: UITableViewDelegate {
         if indexPath.row + 1 == photos.count {
             downloadPhotos()
         }
-    }
-    
-}
-
-extension ImagesListViewController: ImagesListCellDelegate {
-    
-    func reloadRow(for cell: ImagesListCell) {
-        guard let indexPath = imagesTableView.indexPath(for: cell) else { return }
-        imagesTableView.reloadRows(at: [indexPath], with: .automatic)
     }
     
 }

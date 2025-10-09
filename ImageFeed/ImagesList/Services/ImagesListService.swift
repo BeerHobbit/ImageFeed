@@ -48,6 +48,8 @@ final class ImagesListService {
                         createdAt: date,
                         welcomeDescription: photoResult.description,
                         thumbImageURL: photoResult.urls.thumb,
+                        smallImageURL: photoResult.urls.small,
+                        regularImageURL: photoResult.urls.regular,
                         largeImageURL: photoResult.urls.full,
                         isLiked: photoResult.likedByUser
                     )
@@ -78,7 +80,7 @@ final class ImagesListService {
     private func makeImagesListRequest(page: Int, perPage: Int) -> URLRequest? {
         guard
             let token = OAuth2TokenStorage.shared.token,
-            let url = Constants.defaultBaseURL?.appendingPathComponent(UnsplashPaths.photos),
+            let url = URL(string: UnsplashURLs.unsplashPhotosListString),
             var urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
             assertionFailure("❌ [makeImagesListRequest] Incorrect request URL")
             return nil
