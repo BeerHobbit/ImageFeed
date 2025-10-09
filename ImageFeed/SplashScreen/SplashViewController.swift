@@ -89,7 +89,7 @@ final class SplashViewController: UIViewController {
     }
     
     private func fetchProfile(token: String) {
-        UIBlockingProgressHUD.show()
+        UIBlockingProgressHUD.show(isBlockingUI: true)
         profileService?.fetchProfile(token) { [weak self] result in
             UIBlockingProgressHUD.dismiss()
             guard let self = self else { return }

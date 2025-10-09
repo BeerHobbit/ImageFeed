@@ -7,8 +7,10 @@ final class UIBlockingProgressHUD {
         return UIApplication.shared.windows.first
     }
     
-    static func show() {
-        window?.isUserInteractionEnabled = false
+    static func show(isBlockingUI: Bool) {
+        if isBlockingUI {
+            window?.isUserInteractionEnabled = false
+        }
         ProgressHUD.mediaSize = 30
         ProgressHUD.marginSize = 20
         ProgressHUD.animate()

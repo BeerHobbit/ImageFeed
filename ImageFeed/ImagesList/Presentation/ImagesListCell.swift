@@ -6,6 +6,10 @@ final class ImagesListCell: UITableViewCell {
     
     static let reuseIdentifier = "ImagesListCell"
     
+    // MARK: - Delegate
+    
+    weak var delegate: ImagesListCellDelegate?
+    
     // MARK: - Views
     
     private let cellImageView: UIImageView = {
@@ -49,6 +53,13 @@ final class ImagesListCell: UITableViewCell {
         return layer
     }()
     
+    private static let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .long
+        formatter.timeStyle = .none
+        return formatter
+    }()
+    
     // MARK: - Initializer
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -68,12 +79,29 @@ final class ImagesListCell: UITableViewCell {
         gradientLayer.frame = gradientView.bounds
     }
     
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        cellImageView.kf.cancelDownloadTask()
+    }
+    
     // MARK: - Cell Configuration Public Method
     
-    func configure(image: UIImage?, date: String, isLiked: Bool) {
-        cellImageView.image = image
-        dateLabel.text = date
-        let likeImage = isLiked ? UIImage(resource: .likeButtonOn) : UIImage(resource: .likeButtonOff)
+    func configureCell(photo: Photo) {
+        guard let imageURL = URL(string: photo.thumbImageURL) else {
+            print("❌ [configureCell] incorrect image URL")
+            return
+        }
+        cellImageView.kf.indicatorType = .activity
+        cellImageView.kf.setImage(with: imageURL, placeholder: UIImage(resource: .placeholder)) { [weak self] _ in
+            guard let self = self else { return }
+            self.delegate?.reloadRow(for: self)
+        }
+        
+        let date = photo.createdAt ?? Date()
+        let dateString = ImagesListCell.dateFormatter.string(from: date)
+        dateLabel.text = dateString
+        
+        let likeImage = photo.isLiked ? UIImage(resource: .likeButtonOn) : UIImage(resource: .likeButtonOff)
         likeButton.setImage(likeImage, for: .normal)
     }
     
