@@ -6,6 +6,19 @@ final class ImagesListCell: UITableViewCell {
     
     static let reuseIdentifier = "ImagesListCell"
     
+    // MARK: - Delegate
+    
+    weak var delegate: ImagesListCellDelegate?
+    
+    // MARK: - Public Properties
+    
+    var photoIsLiked: Bool = false {
+        didSet {
+            let likeImage = photoIsLiked ? UIImage(resource: .likeButtonOn) : UIImage(resource: .likeButtonOff)
+            likeButton.setImage(likeImage, for: .normal)
+        }
+    }
+    
     // MARK: - Views
     
     private let cellImageView: UIImageView = {
@@ -63,6 +76,7 @@ final class ImagesListCell: UITableViewCell {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         configCellUI()
         configConstraints()
+        configActions()
     }
     
     required init?(coder: NSCoder) {
@@ -95,8 +109,7 @@ final class ImagesListCell: UITableViewCell {
         let dateString = ImagesListCell.dateFormatter.string(from: date)
         dateLabel.text = dateString
         
-        let likeImage = photo.isLiked ? UIImage(resource: .likeButtonOn) : UIImage(resource: .likeButtonOff)
-        likeButton.setImage(likeImage, for: .normal)
+        photoIsLiked = photo.isLiked
     }
     
     // MARK: - Configure UI
@@ -143,6 +156,19 @@ final class ImagesListCell: UITableViewCell {
                 dateLabel.bottomAnchor.constraint(equalTo: cellImageView.bottomAnchor, constant: -8)
             ]
         )
+    }
+    
+    // MARK: - Configure Actions
+    
+    private func configActions() {
+        likeButton.addTarget(self, action: #selector(likeButtonDidTap), for: .touchUpInside)
+    }
+    
+    // MARK: - Actions
+    
+    @objc
+    private func likeButtonDidTap() {
+        delegate?.likeButtonInCellDidTap(self)
     }
     
     // MARK: - Private Methods

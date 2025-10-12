@@ -73,6 +73,7 @@ final class ProfileViewController: UIViewController {
     
     private var profileService: ProfileService?
     private var profileImageServiceObserver: NSObjectProtocol?
+    private var profileLogoutService: ProfileLogoutService?
     
     // MARK: - Life Cycle
     
@@ -91,6 +92,7 @@ final class ProfileViewController: UIViewController {
     
     private func configDependencies() {
         profileService = ProfileService.shared
+        profileLogoutService = ProfileLogoutService.shared
     }
     
     // MARK: - Configure UI
@@ -131,7 +133,9 @@ final class ProfileViewController: UIViewController {
     // MARK: - Actions
     
     @objc
-    private func didTapLogoutButton(_ sender: UIButton) {} // TODO: add an action to the button
+    private func didTapLogoutButton(_ sender: UIButton) {
+        showLogoutAlert()
+    }
     
     // MARK: - Private Methods
     
@@ -161,6 +165,32 @@ final class ProfileViewController: UIViewController {
         userpickImageView.kf.indicatorType = .activity
         userpickImageView.kf.setImage(with: url, placeholder: UIImage(resource: .userpickImageStub))
     }
-
+    
+    private func logoutAndChangeRoot() {
+        profileLogoutService?.logout()
+        guard let window = UIApplication.shared.windows.first else {
+            assertionFailure("❌ [logoutAndChangeRoot] Invalid window configuration")
+            return
+        }
+        let splashViewController = SplashViewController()
+        window.rootViewController = splashViewController
+    }
+    
+    private func showLogoutAlert() {
+        let alert = UIAlertController(
+            title: "Пока, пока!",
+            message: "Уверены, что хотите выйти?",
+            preferredStyle: .alert
+        )
+        let yesAction = UIAlertAction(title: "Да", style: .default) { [weak self] _ in
+            guard let self = self else { return }
+            self.logoutAndChangeRoot()
+        }
+        let noAction = UIAlertAction(title: "Нет", style: .cancel)
+        alert.addAction(noAction)
+        alert.addAction(yesAction)
+        present(alert, animated: true)
+    }
+    
 }
 

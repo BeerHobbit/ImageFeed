@@ -11,8 +11,6 @@ final class UIBlockingProgressHUD {
         if isBlockingUI {
             window?.isUserInteractionEnabled = false
         }
-        ProgressHUD.mediaSize = 30
-        ProgressHUD.marginSize = 20
         ProgressHUD.animate()
     }
     

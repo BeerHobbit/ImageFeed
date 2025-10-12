@@ -31,7 +31,7 @@ final class ImagesListViewController: UIViewController {
     // MARK: - Configure Dependencies
     
     private func configDependencies() {
-        imagesListService = ImagesListService()
+        imagesListService = ImagesListService.shared
         setupObserver()
         imagesTableView.dataSource = self
         imagesTableView.delegate = self
@@ -82,7 +82,6 @@ final class ImagesListViewController: UIViewController {
             print("❌ [presentSingleImageViewController] incorrect image URL")
             return
         }
-        
         let singleImageViewController = SingleImageViewController()
         singleImageViewController.imageURL = imageURL
         singleImageViewController.modalPresentationStyle = .fullScreen
@@ -116,6 +115,33 @@ final class ImagesListViewController: UIViewController {
         }
     }
     
+    private func changeLike(cell: ImagesListCell) {
+        guard let indexPath = imagesTableView.indexPath(for: cell) else { return }
+        let photo = photos[indexPath.row]
+        let id = photo.id
+        let isLike = !photo.isLiked
+        UIBlockingProgressHUD.show(isBlockingUI: true)
+        
+        imagesListService?.fetchLike(id: id, isLike: isLike) { [weak self] result in
+            guard let self = self else {
+                UIBlockingProgressHUD.dismiss()
+                return
+            }
+            switch result {
+            case .success(()):
+                guard let servicePhotos = self.imagesListService?.photos else { return }
+                self.photos = servicePhotos
+                cell.photoIsLiked = self.photos[indexPath.row].isLiked
+                UIBlockingProgressHUD.dismiss()
+                
+            case .failure(let error):
+                UIBlockingProgressHUD.dismiss()
+                print("❌ [changeLike] Like was not updated for photo ID: \(id), error: \(error)")
+                self.showErrorAlert()
+            }
+        }
+    }
+    
 }
 
 // MARK: - UITableViewDataSource
@@ -133,6 +159,7 @@ extension ImagesListViewController: UITableViewDataSource {
         }
         
         let photo = photos[indexPath.row]
+        imageListCell.delegate = self
         imageListCell.configureCell(photo: photo)
         
         return imageListCell
@@ -166,6 +193,16 @@ extension ImagesListViewController: UITableViewDelegate {
         if indexPath.row + 1 == photos.count {
             downloadPhotos()
         }
+    }
+    
+}
+
+// MARK: - ImagesListCellDelegate
+
+extension ImagesListViewController: ImagesListCellDelegate {
+    
+    func likeButtonInCellDidTap(_ cell: ImagesListCell) {
+        changeLike(cell: cell)
     }
     
 }

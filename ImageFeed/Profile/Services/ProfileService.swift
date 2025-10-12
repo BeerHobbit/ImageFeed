@@ -6,9 +6,12 @@ final class ProfileService {
     
     static let shared = ProfileService()
     
+    // MARK: - Public Properties
+    
+    var profile: Profile?
+    
     // MARK: - Private Properties
     
-    private(set) var profile: Profile?
     private let urlSession = URLSession.shared
     private var profileTask: URLSessionTask?
     

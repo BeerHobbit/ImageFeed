@@ -13,10 +13,11 @@ enum UnsplashURLs {
     static let unsplashTokenRequestURLString = "https://unsplash.com/oauth/token"
     static let unsplashUserProfileURLString = "https://api.unsplash.com/me"
     static let unsplashUserPublicProfileURLString = "https://api.unsplash.com/users/"
-    static let unsplashPhotosListString = "https://api.unsplash.com/photos"
+    static let unsplashPhotosListString = "https://api.unsplash.com/photos/"
 }
 
 enum HttpMethods {
     static let get = "GET"
     static let post = "POST"
+    static let delete = "DELETE"
 }

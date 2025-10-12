@@ -111,14 +111,18 @@ final class SingleImageViewController: UIViewController {
     
     private func configImageInScrollView() {
         guard let url = imageURL else { return }
-        UIBlockingProgressHUD.show(isBlockingUI: false)
-        imageView.kf.setImage(with: url) { [weak self] _ in
+        UIBlockingProgressHUD.show(isBlockingUI: true)
+        imageView.kf.setImage(with: url) { [weak self] result in
             UIBlockingProgressHUD.dismiss()
-            guard
-                let self = self,
-                let image = self.imageView.image else { return }
-            self.imageView.frame.size = image.size
-            rescaleAndCenterImageInScrollView(image: image)
+            guard let self = self else { return }
+            switch result {
+            case .success(let imageResult):
+                self.imageView.frame.size = imageResult.image.size
+                self.rescaleAndCenterImageInScrollView(image: imageResult.image)
+            case .failure(let error):
+                print("❌ [onfigImageInScrollView] Kingfisher error: \(error)")
+                self.showErrorAlert()
+            }
         }
     }
     

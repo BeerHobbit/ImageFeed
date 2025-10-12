@@ -12,7 +12,7 @@ extension UIViewController {
             message: message,
             preferredStyle: .alert
         )
-        let action = UIAlertAction(title: actionTitle, style: .default)
+        let action = UIAlertAction(title: actionTitle, style: .cancel)
         alert.addAction(action)
         present(alert, animated: true)
     }
