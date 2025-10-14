@@ -115,16 +115,6 @@ final class ImagesListCell: UITableViewCell {
         photoIsLiked = photo.isLiked
     }
     
-    //MARK: - Public Methods
-    
-    func blockLikeButton(_ isBlocked: Bool) {
-        if isBlocked {
-            likeButton.isUserInteractionEnabled = false
-        } else {
-            likeButton.isUserInteractionEnabled = true
-        }
-    }
-    
     // MARK: - Configure UI
     
     private func configCellUI() {

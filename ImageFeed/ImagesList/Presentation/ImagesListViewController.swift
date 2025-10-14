@@ -121,17 +121,17 @@ final class ImagesListViewController: UIViewController {
         let photo = photos[indexPath.row]
         let id = photo.id
         let isLike = !photo.isLiked
-        cell.blockLikeButton(true)
+        UIBlockingProgressHUD.show(isBlockingUI: true)
         
         imagesListService?.fetchLike(id: id, isLike: isLike) { [weak self] result in
             guard let self = self else {
-                cell.blockLikeButton(false)
+                UIBlockingProgressHUD.dismiss()
                 return
             }
             switch result {
             case .success(()):
                 guard let servicePhotos = self.imagesListService?.photos else {
-                    cell.blockLikeButton(false)
+                    UIBlockingProgressHUD.dismiss()
                     return
                 }
                 self.photos = servicePhotos
@@ -140,7 +140,7 @@ final class ImagesListViewController: UIViewController {
                 print("❌ [changeLike] Like was not updated for photo ID: \(id), error: \(error)")
                 self.showErrorAlert()
             }
-            cell.blockLikeButton(false)
+            UIBlockingProgressHUD.dismiss()
         }
     }
     
