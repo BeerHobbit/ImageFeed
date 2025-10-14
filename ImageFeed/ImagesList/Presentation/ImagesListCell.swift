@@ -21,19 +21,19 @@ final class ImagesListCell: UITableViewCell {
     
     // MARK: - Views
     
+    private let likeButton: UIButton = {
+        let button = UIButton()
+        let image = UIImage(resource: .likeButtonOff)
+        button.setImage(image, for: .normal)
+        return button
+    }()
+    
     private let cellImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
         imageView.layer.cornerRadius = 16
         imageView.layer.masksToBounds = true
         return imageView
-    }()
-    
-    private let likeButton: UIButton = {
-        let button = UIButton()
-        let image = UIImage(resource: .likeButtonOff)
-        button.setImage(image, for: .normal)
-        return button
     }()
     
     private let dateLabel: UILabel = {
@@ -105,11 +105,24 @@ final class ImagesListCell: UITableViewCell {
         cellImageView.kf.indicatorType = .activity
         cellImageView.kf.setImage(with: imageURL, placeholder: UIImage(resource: .placeholder))
         
-        let date = photo.createdAt ?? Date()
-        let dateString = ImagesListCell.dateFormatter.string(from: date)
-        dateLabel.text = dateString
+        if let date = photo.createdAt {
+            let dateString = ImagesListCell.dateFormatter.string(from: date)
+            dateLabel.text = dateString
+        } else {
+            dateLabel.text = ""
+        }
         
         photoIsLiked = photo.isLiked
+    }
+    
+    //MARK: - Public Methods
+    
+    func blockLikeButton(_ isBlocked: Bool) {
+        if isBlocked {
+            likeButton.isUserInteractionEnabled = false
+        } else {
+            likeButton.isUserInteractionEnabled = true
+        }
     }
     
     // MARK: - Configure UI

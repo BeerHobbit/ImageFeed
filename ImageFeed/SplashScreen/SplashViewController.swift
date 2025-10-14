@@ -91,9 +91,10 @@ final class SplashViewController: UIViewController {
     private func fetchProfile(token: String) {
         UIBlockingProgressHUD.show(isBlockingUI: true)
         profileService?.fetchProfile(token) { [weak self] result in
-            UIBlockingProgressHUD.dismiss()
-            guard let self = self else { return }
-            
+            guard let self = self else {
+                UIBlockingProgressHUD.dismiss()
+                return
+            }
             switch result {
             case .success(let profile):
                 let username = profile.username
@@ -102,8 +103,8 @@ final class SplashViewController: UIViewController {
             case .failure(let error):
                 print(error)
                 self.showErrorAlert()
-                break
             }
+            UIBlockingProgressHUD.dismiss()
         }
     }
     

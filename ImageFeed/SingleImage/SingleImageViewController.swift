@@ -113,8 +113,10 @@ final class SingleImageViewController: UIViewController {
         guard let url = imageURL else { return }
         UIBlockingProgressHUD.show(isBlockingUI: true)
         imageView.kf.setImage(with: url) { [weak self] result in
-            UIBlockingProgressHUD.dismiss()
-            guard let self = self else { return }
+            guard let self = self else {
+                UIBlockingProgressHUD.dismiss()
+                return
+            }
             switch result {
             case .success(let imageResult):
                 self.imageView.frame.size = imageResult.image.size
@@ -123,6 +125,7 @@ final class SingleImageViewController: UIViewController {
                 print("❌ [onfigImageInScrollView] Kingfisher error: \(error)")
                 self.showErrorAlert()
             }
+            UIBlockingProgressHUD.dismiss()
         }
     }
     

@@ -47,7 +47,7 @@ final class ImagesListService {
             guard let self = self else { return }
             switch result {
             case .success(let photosResult):
-                var newPhotos: [Photo] = photosResult.map { photoResult in
+                let newPhotos: [Photo] = photosResult.map { photoResult in
                     let date = self.dateFormatter.date(from: photoResult.createdAt)
                     let photo = Photo(
                         id: photoResult.id,

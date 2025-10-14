@@ -64,8 +64,8 @@ final class ImagesListViewController: UIViewController {
     private func downloadPhotos() {
         UIBlockingProgressHUD.show(isBlockingUI: false)
         imagesListService?.fetchPhotosNextPage { [weak self] result in
-            UIBlockingProgressHUD.dismiss()
             guard let self = self else {
+                UIBlockingProgressHUD.dismiss()
                 return
             }
             switch result {
@@ -74,6 +74,7 @@ final class ImagesListViewController: UIViewController {
             case .failure(_):
                 self.showErrorAlert()
             }
+            UIBlockingProgressHUD.dismiss()
         }
     }
     
@@ -120,25 +121,26 @@ final class ImagesListViewController: UIViewController {
         let photo = photos[indexPath.row]
         let id = photo.id
         let isLike = !photo.isLiked
-        UIBlockingProgressHUD.show(isBlockingUI: true)
+        cell.blockLikeButton(true)
         
         imagesListService?.fetchLike(id: id, isLike: isLike) { [weak self] result in
             guard let self = self else {
-                UIBlockingProgressHUD.dismiss()
+                cell.blockLikeButton(false)
                 return
             }
             switch result {
             case .success(()):
-                guard let servicePhotos = self.imagesListService?.photos else { return }
+                guard let servicePhotos = self.imagesListService?.photos else {
+                    cell.blockLikeButton(false)
+                    return
+                }
                 self.photos = servicePhotos
                 cell.photoIsLiked = self.photos[indexPath.row].isLiked
-                UIBlockingProgressHUD.dismiss()
-                
             case .failure(let error):
-                UIBlockingProgressHUD.dismiss()
                 print("❌ [changeLike] Like was not updated for photo ID: \(id), error: \(error)")
                 self.showErrorAlert()
             }
+            cell.blockLikeButton(false)
         }
     }
     
