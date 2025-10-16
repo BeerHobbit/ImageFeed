@@ -69,11 +69,58 @@ final class ProfileViewController: UIViewController {
         return stack
     }()
     
+    // MARK: - Loader Views
+    
+    private let avatarLoaderView: LoaderView = {
+        let view = LoaderView()
+        view.clipsToBounds = true
+        view.layer.cornerRadius = 35
+        return view
+    }()
+    
+    private let nameLoaderView: LoaderView = {
+        let view = LoaderView()
+        view.clipsToBounds = true
+        view.layer.cornerRadius = 9
+        return view
+    }()
+    
+    private let loginLoaderView: LoaderView = {
+        let view = LoaderView()
+        view.clipsToBounds = true
+        view.layer.cornerRadius = 9
+        return view
+    }()
+    
+    private let messageLoaderView: LoaderView = {
+        let view = LoaderView()
+        view.clipsToBounds = true
+        view.layer.cornerRadius = 9
+        return view
+    }()
+    
+    private lazy var loaderVStack: UIStackView = {
+        let stack = UIStackView(
+            arrangedSubviews: [
+                avatarLoaderView,
+                nameLoaderView,
+                loginLoaderView,
+                messageLoaderView
+            ]
+        )
+        stack.axis = .vertical
+        stack.alignment = .leading
+        stack.spacing = 8
+        return stack
+    }()
+    
     // MARK: - Private Properties
     
     private var profileService: ProfileService?
     private var profileImageServiceObserver: NSObjectProtocol?
     private var profileLogoutService: ProfileLogoutService?
+    
+    private var isLoading = false
     
     // MARK: - Life Cycle
     
@@ -84,8 +131,23 @@ final class ProfileViewController: UIViewController {
         configConstraints()
         configActions()
         setupObserver()
+        
+        showLoadingState()
+        
         updateProfileUI()
         updateAvatar()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        if loaderVStack.isHidden == false {
+            animateLoaderViews()
+        }
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        stopLoaderViews()
     }
     
     // MARK: - Configure Dependencies
@@ -100,6 +162,8 @@ final class ProfileViewController: UIViewController {
     private func configUI() {
         view.backgroundColor = .ypBlack
         view.addSubview(vStack)
+        
+        view.addSubview(loaderVStack)
     }
     
     // MARK: - Configure Constraints
@@ -108,6 +172,13 @@ final class ProfileViewController: UIViewController {
         userpickImageView.translatesAutoresizingMaskIntoConstraints = false
         logoutButton.translatesAutoresizingMaskIntoConstraints = false
         vStack.translatesAutoresizingMaskIntoConstraints = false
+
+        avatarLoaderView.translatesAutoresizingMaskIntoConstraints = false
+        nameLoaderView.translatesAutoresizingMaskIntoConstraints = false
+        loginLoaderView.translatesAutoresizingMaskIntoConstraints = false
+        messageLoaderView.translatesAutoresizingMaskIntoConstraints = false
+        loaderVStack.translatesAutoresizingMaskIntoConstraints = false
+        
         
         NSLayoutConstraint.activate(
             [
@@ -119,7 +190,24 @@ final class ProfileViewController: UIViewController {
                 
                 vStack.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 32),
                 vStack.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
-                vStack.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16)
+                vStack.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
+                
+                //DELETE
+                avatarLoaderView.heightAnchor.constraint(equalToConstant: 70),
+                avatarLoaderView.widthAnchor.constraint(equalToConstant: 70),
+                
+                nameLoaderView.heightAnchor.constraint(equalToConstant: 18),
+                nameLoaderView.widthAnchor.constraint(equalToConstant: 225),
+                
+                loginLoaderView.heightAnchor.constraint(equalToConstant: 18),
+                loginLoaderView.widthAnchor.constraint(equalToConstant: 90),
+                
+                messageLoaderView.heightAnchor.constraint(equalToConstant: 18),
+                messageLoaderView.widthAnchor.constraint(equalToConstant: 65),
+                
+                loaderVStack.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 32),
+                loaderVStack.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16)
+                //DELETE
             ]
         )
     }
@@ -162,8 +250,10 @@ final class ProfileViewController: UIViewController {
             let profileImageURL = ProfileImageService.shared.avatarURL,
             let url = URL(string: profileImageURL)
         else { return }
-        userpickImageView.kf.indicatorType = .activity
-        userpickImageView.kf.setImage(with: url, placeholder: UIImage(resource: .userpickImageStub))
+        userpickImageView.kf.setImage(with: url, placeholder: UIImage(resource: .userpickImageStub)) { [weak self] _ in
+            guard let self else { return }
+            self.hideLoadingState()
+        }
     }
     
     private func logoutAndChangeRoot() {
@@ -177,6 +267,7 @@ final class ProfileViewController: UIViewController {
     }
     
     private func showLogoutAlert() {
+        
         let alert = UIAlertController(
             title: "Пока, пока!",
             message: "Уверены, что хотите выйти?",
@@ -190,6 +281,42 @@ final class ProfileViewController: UIViewController {
         alert.addAction(noAction)
         alert.addAction(yesAction)
         present(alert, animated: true)
+    }
+    
+    private func animateLoaderViews() {
+        loaderVStack.isHidden = false
+        avatarLoaderView.animateGradient()
+        nameLoaderView.animateGradient()
+        loginLoaderView.animateGradient()
+        messageLoaderView.animateGradient()
+    }
+    
+    private func stopLoaderViews() {
+        avatarLoaderView.stopAnimation()
+        nameLoaderView.stopAnimation()
+        loginLoaderView.stopAnimation()
+        messageLoaderView.stopAnimation()
+        loaderVStack.isHidden = true
+    }
+    
+    private func hideUI(_ state: Bool) {
+        state ? (vStack.isHidden = true) : (vStack.isHidden = false)
+    }
+    
+    private func showLoadingState() {
+        guard !isLoading else { return }
+        isLoading = true
+        hideUI(true)
+        loaderVStack.isHidden = false
+        animateLoaderViews()
+    }
+    
+    private func hideLoadingState() {
+        guard isLoading else { return }
+        isLoading = false
+        stopLoaderViews()
+        loaderVStack.isHidden = true
+        hideUI(false)
     }
     
 }
