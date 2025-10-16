@@ -120,7 +120,7 @@ final class WebViewViewController: UIViewController {
         {
             return codeItem.value
         } else {
-            print("[code] Failed to find authorization code")
+            print("⚠️ [code] Failed to find authorization code")
             return nil
         }
     }

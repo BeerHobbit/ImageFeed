@@ -2,7 +2,7 @@ import UIKit
 import ProgressHUD
 
 @main
-class AppDelegate: UIResponder, UIApplicationDelegate {
+final class AppDelegate: UIResponder, UIApplicationDelegate {
 
     // MARK: - UISceneSession Lifecycle
 
@@ -13,13 +13,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+        configProgressHUD()
+        return true
+    }
+
+    //  MARK: - Private Methods
+    
+    private func configProgressHUD() {
         ProgressHUD.animationType = .activityIndicator
         ProgressHUD.colorHUD = .ypWhite
         ProgressHUD.colorAnimation = .ypBlack
         ProgressHUD.mediaSize = 30
         ProgressHUD.marginSize = 20
-        return true
     }
-
+    
 }
 

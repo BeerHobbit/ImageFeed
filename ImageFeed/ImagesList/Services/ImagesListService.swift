@@ -8,12 +8,12 @@ final class ImagesListService {
     
     // MARK: - Notifications
     
-    static let didChangeNotification = Notification.Name(rawValue: "ImagesListServiceDidChange")
+    static let didChangeNotification = Notification.Name("ImagesListServiceDidChange")
     
     // MARK: - Public Properties
     
-    var photos: [Photo] = []
-    var lastLoadedPage: Int?
+    private(set) var photos: [Photo] = []
+    private(set) var lastLoadedPage: Int?
     
     // MARK: - Private Properties
     
@@ -31,142 +31,140 @@ final class ImagesListService {
     func fetchPhotosNextPage(completion: @escaping (Result<[Photo], Error>) -> Void) {
         assert(Thread.isMainThread)
         guard imagesListTask == nil else {
-            print("[fetchPhotosNextPage] Task already exists")
+            print("⚠️ [fetchPhotosNextPage] Task already running")
             return
         }
         
         let nextPage = (lastLoadedPage ?? 0) + 1
-        let imagesPerPage = 10
-        guard let request = makeImagesListRequest(page: nextPage, perPage: imagesPerPage) else {
-            print("❌ [fetchPhotosNextPage] Failed to create request")
+        guard let request = makeImagesListRequest(page: nextPage, perPage: 10) else {
             completion(.failure(NetworkError.invalidRequest))
             return
         }
         
-        let task = urlSession.objectTask(for: request) { [weak self] (result: Result<[PhotoResult], Error>) in
-            guard let self = self else { return }
+        imagesListTask = urlSession.objectTask(for: request) { [weak self] (result: Result<[PhotoResult], Error>) in
+            guard let self else { return }
+            defer { self.imagesListTask = nil }
+            
             switch result {
             case .success(let photosResult):
-                let newPhotos: [Photo] = photosResult.map { photoResult in
-                    let date = self.dateFormatter.date(from: photoResult.createdAt)
-                    let photo = Photo(
-                        id: photoResult.id,
-                        size: CGSize(width: Double(photoResult.width), height: Double(photoResult.height)),
-                        createdAt: date,
-                        welcomeDescription: photoResult.description,
-                        thumbImageURL: photoResult.urls.thumb,
-                        smallImageURL: photoResult.urls.small,
-                        regularImageURL: photoResult.urls.regular,
-                        largeImageURL: photoResult.urls.full,
-                        isLiked: photoResult.likedByUser
-                    )
-                    return photo
-                }
-                let photoIds = Set(self.photos.map {$0.id})
-                let uniqueNewPhotos = newPhotos.filter { !photoIds.contains($0.id) }
-                self.photos.append(contentsOf: uniqueNewPhotos)
-                lastLoadedPage = (lastLoadedPage ?? 0) + 1
-                completion(.success(uniqueNewPhotos))
-                NotificationCenter.default.post(
-                    name: ImagesListService.didChangeNotification,
-                    object: self,
-                    userInfo: nil
-                )
-                
+                let newPhotos = photosResult.map { self.makePhoto(from: $0) }
+                self.appendUniquePhotos(newPhotos)
+                completion(.success(newPhotos))
+                NotificationCenter.default.post(name: Self.didChangeNotification, object: self)
             case .failure(let error):
                 completion(.failure(error))
             }
-            
-            self.imagesListTask = nil
         }
         
-        self.imagesListTask = task
-        task.resume()
+        imagesListTask?.resume()
     }
     
     func fetchLike(id: String, isLike: Bool, completion: @escaping (Result<Void, Error>) -> Void) {
         assert(Thread.isMainThread)
         guard likeTask == nil else {
-            print("[fetchLike] Task already exists")
+            print("⚠️ [fetchLike] Task already running")
             return
         }
         
         guard let request = makeLikeRequest(id: id, isLike: isLike) else {
-            print("❌ [fetchLike] Failed to create request")
             completion(.failure(NetworkError.invalidRequest))
             return
         }
         
-        let task = urlSession.data(for: request) { [weak self] result in
-            guard let self = self else { return }
+        likeTask = urlSession.data(for: request) { [weak self] result in
+            guard let self else { return }
+            defer { self.likeTask = nil }
+            
             switch result {
-            case .success(_):
-                if let index = self.photos.firstIndex(where: { $0.id == id }) {
-                    let photo = self.photos[index]
-                    let newPhoto = Photo(
-                        id: photo.id,
-                        size: photo.size,
-                        createdAt: photo.createdAt,
-                        welcomeDescription: photo.welcomeDescription,
-                        thumbImageURL: photo.thumbImageURL,
-                        smallImageURL: photo.smallImageURL,
-                        regularImageURL: photo.regularImageURL,
-                        largeImageURL: photo.largeImageURL,
-                        isLiked: !photo.isLiked
-                    )
-                    self.photos[index] = newPhoto
-                }
+            case .success:
+                self.toggleLike(for: id)
                 completion(.success(()))
-                
             case .failure(let error):
                 completion(.failure(error))
             }
-            self.likeTask = nil
         }
         
-        self.likeTask = task
-        task.resume()
+        likeTask?.resume()
+    }
+    
+    func resetState() {
+        photos = []
+        lastLoadedPage = nil
     }
     
     // MARK: - Private Methods
     
+    private func makePhoto(from result: PhotoResult) -> Photo {
+        Photo(
+            id: result.id,
+            size: CGSize(width: Double(result.width), height: Double(result.height)),
+            createdAt: dateFormatter.date(from: result.createdAt),
+            welcomeDescription: result.description,
+            thumbImageURL: result.urls.thumb,
+            smallImageURL: result.urls.small,
+            regularImageURL: result.urls.regular,
+            largeImageURL: result.urls.full,
+            isLiked: result.likedByUser
+        )
+    }
+    
+    private func appendUniquePhotos(_ newPhotos: [Photo]) {
+        let existingIds = Set(photos.map(\.id))
+        let unique = newPhotos.filter { !existingIds.contains($0.id) }
+        photos.append(contentsOf: unique)
+        lastLoadedPage = (lastLoadedPage ?? 0) + 1
+    }
+    
+    private func toggleLike(for id: String) {
+        guard let index = photos.firstIndex(where: { $0.id == id }) else { return }
+        var photo = photos[index]
+        photo = Photo(
+            id: photo.id,
+            size: photo.size,
+            createdAt: photo.createdAt,
+            welcomeDescription: photo.welcomeDescription,
+            thumbImageURL: photo.thumbImageURL,
+            smallImageURL: photo.smallImageURL,
+            regularImageURL: photo.regularImageURL,
+            largeImageURL: photo.largeImageURL,
+            isLiked: !photo.isLiked
+        )
+        photos[index] = photo
+    }
+    
     private func makeImagesListRequest(page: Int, perPage: Int) -> URLRequest? {
         guard
             let token = OAuth2TokenStorage.shared.token,
-            let url = URL(string: UnsplashURLs.unsplashPhotosListString),
-            var urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
-            assertionFailure("❌ [makeImagesListRequest] Incorrect request URL")
-            return nil
-        }
-        urlComponents.queryItems = [
-            URLQueryItem(name: "page", value: "\(page)"),
-            URLQueryItem(name: "per_page", value: "\(perPage)")
-        ]
-        guard let requestURL = urlComponents.url else {
-            print("❌ [makeImagesListRequest] Incorrect request URL with parameters")
+            var components = URLComponents(string: UnsplashURLs.unsplashPhotosListString)
+        else {
+            assertionFailure("❌[makeImagesListRequest] Invalid URL for images list request")
             return nil
         }
         
-        var request = URLRequest(url: requestURL)
+        components.queryItems = [
+            URLQueryItem(name: "page", value: "\(page)"),
+            URLQueryItem(name: "per_page", value: "\(perPage)")
+        ]
+        
+        guard let url = components.url else { return nil }
+        var request = URLRequest(url: url)
         request.httpMethod = HttpMethods.get
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         return request
     }
     
     private func makeLikeRequest(id: String, isLike: Bool) -> URLRequest? {
-        let urlString = UnsplashURLs.unsplashPhotosListString + id + "/like"
         guard
             let token = OAuth2TokenStorage.shared.token,
-            let url = URL(string: urlString) else {
-            print("❌ [makePostLikeRequest] Incorrect request URL, photo ID: \(id)")
+            let url = URL(string: UnsplashURLs.unsplashPhotosListString + "\(id)/like")
+        else {
             return nil
         }
+        
         var request = URLRequest(url: url)
         request.httpMethod = isLike ? HttpMethods.post : HttpMethods.delete
-        print("[makeLikeRequest] Request method is \(request.httpMethod ?? "nil")")
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         return request
     }
     
 }
-

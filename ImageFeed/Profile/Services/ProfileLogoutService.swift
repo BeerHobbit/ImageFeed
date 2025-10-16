@@ -23,10 +23,9 @@ final class ProfileLogoutService {
     func logout() {
         tokenStorage.token = nil
         cleanCookies()
-        profileService.profile = nil
-        profileImageService.avatarURL = nil
-        imagesListService.photos = []
-        imagesListService.lastLoadedPage = nil
+        profileService.resetState()
+        profileImageService.resetState()
+        imagesListService.resetState()
     }
     
     // MARK: - Private Methods
