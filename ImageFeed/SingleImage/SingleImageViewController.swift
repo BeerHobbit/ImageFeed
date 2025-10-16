@@ -4,7 +4,7 @@ final class SingleImageViewController: UIViewController {
     
     // MARK: - Public Properties
     
-    var image: UIImage?
+    var imageURL: URL?
     
     // MARK: - Views
     
@@ -104,16 +104,29 @@ final class SingleImageViewController: UIViewController {
     
     private func configScrollView() {
         scrollView.addSubview(imageView)
-        scrollView.minimumZoomScale = 0.1
+        scrollView.minimumZoomScale = 0.01
         scrollView.maximumZoomScale = 1.25
         configImageInScrollView()
     }
     
     private func configImageInScrollView() {
-        guard let image = image else { return }
-        imageView.image = image
-        imageView.frame.size = image.size
-        rescaleAndCenterImageInScrollView(image: image)
+        guard let url = imageURL else { return }
+        UIBlockingProgressHUD.show(isBlockingUI: true)
+        imageView.kf.setImage(with: url) { [weak self] result in
+            guard let self = self else {
+                UIBlockingProgressHUD.dismiss()
+                return
+            }
+            switch result {
+            case .success(let imageResult):
+                self.imageView.frame.size = imageResult.image.size
+                self.rescaleAndCenterImageInScrollView(image: imageResult.image)
+            case .failure(let error):
+                print("❌ [onfigImageInScrollView] Kingfisher error: \(error)")
+                self.showErrorAlert()
+            }
+            UIBlockingProgressHUD.dismiss()
+        }
     }
     
     private func  rescaleAndCenterImageInScrollView(image: UIImage) {
@@ -140,7 +153,7 @@ final class SingleImageViewController: UIViewController {
     }
     
     private func presentShareMenu() {
-        guard let image = image else { return }
+        guard let image = imageView.image else { return }
         let shareMenu = UIActivityViewController(
             activityItems: [image],
             applicationActivities: nil

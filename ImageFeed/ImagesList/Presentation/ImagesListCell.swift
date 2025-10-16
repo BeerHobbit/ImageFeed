@@ -6,7 +6,27 @@ final class ImagesListCell: UITableViewCell {
     
     static let reuseIdentifier = "ImagesListCell"
     
+    // MARK: - Delegate
+    
+    weak var delegate: ImagesListCellDelegate?
+    
+    // MARK: - Public Properties
+    
+    var photoIsLiked: Bool = false {
+        didSet {
+            let likeImage = photoIsLiked ? UIImage(resource: .likeButtonOn) : UIImage(resource: .likeButtonOff)
+            likeButton.setImage(likeImage, for: .normal)
+        }
+    }
+    
     // MARK: - Views
+    
+    private let likeButton: UIButton = {
+        let button = UIButton()
+        let image = UIImage(resource: .likeButtonOff)
+        button.setImage(image, for: .normal)
+        return button
+    }()
     
     private let cellImageView: UIImageView = {
         let imageView = UIImageView()
@@ -14,13 +34,6 @@ final class ImagesListCell: UITableViewCell {
         imageView.layer.cornerRadius = 16
         imageView.layer.masksToBounds = true
         return imageView
-    }()
-    
-    private let likeButton: UIButton = {
-        let button = UIButton()
-        let image = UIImage(resource: .likeButtonOff)
-        button.setImage(image, for: .normal)
-        return button
     }()
     
     private let dateLabel: UILabel = {
@@ -49,12 +62,21 @@ final class ImagesListCell: UITableViewCell {
         return layer
     }()
     
+    private static let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .long
+        formatter.timeStyle = .none
+        formatter.locale = Locale(identifier: "ru_RU")
+        return formatter
+    }()
+    
     // MARK: - Initializer
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         configCellUI()
         configConstraints()
+        configActions()
     }
     
     required init?(coder: NSCoder) {
@@ -68,13 +90,29 @@ final class ImagesListCell: UITableViewCell {
         gradientLayer.frame = gradientView.bounds
     }
     
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        cellImageView.kf.cancelDownloadTask()
+    }
+    
     // MARK: - Cell Configuration Public Method
     
-    func configure(image: UIImage?, date: String, isLiked: Bool) {
-        cellImageView.image = image
-        dateLabel.text = date
-        let likeImage = isLiked ? UIImage(resource: .likeButtonOn) : UIImage(resource: .likeButtonOff)
-        likeButton.setImage(likeImage, for: .normal)
+    func configureCell(photo: Photo) {
+        guard let imageURL = URL(string: photo.smallImageURL) else {
+            print("❌ [configureCell] incorrect image URL")
+            return
+        }
+        cellImageView.kf.indicatorType = .activity
+        cellImageView.kf.setImage(with: imageURL, placeholder: UIImage(resource: .placeholder))
+        
+        if let date = photo.createdAt {
+            let dateString = ImagesListCell.dateFormatter.string(from: date)
+            dateLabel.text = dateString
+        } else {
+            dateLabel.text = ""
+        }
+        
+        photoIsLiked = photo.isLiked
     }
     
     // MARK: - Configure UI
@@ -121,6 +159,19 @@ final class ImagesListCell: UITableViewCell {
                 dateLabel.bottomAnchor.constraint(equalTo: cellImageView.bottomAnchor, constant: -8)
             ]
         )
+    }
+    
+    // MARK: - Configure Actions
+    
+    private func configActions() {
+        likeButton.addTarget(self, action: #selector(likeButtonDidTap), for: .touchUpInside)
+    }
+    
+    // MARK: - Actions
+    
+    @objc
+    private func likeButtonDidTap() {
+        delegate?.likeButtonInCellDidTap(self)
     }
     
     // MARK: - Private Methods

@@ -10,9 +10,12 @@ final class ProfileImageService {
     
     static let didChangeNotification = Notification.Name(rawValue: "ProfileImageProviderDidChange")
     
-    // MARK: - Private Properties
+    // MARK: - Public Properties
     
     private(set) var avatarURL: String?
+    
+    // MARK: - Private Properties
+    
     private let urlSession = URLSession.shared
     private var profileImageTask: URLSessionTask?
     
@@ -27,13 +30,13 @@ final class ProfileImageService {
         profileImageTask?.cancel()
         
         guard let request = makeProfileImageRequest(authToken: token, username: username) else {
-            print("❌ [makeProfileImageRequest] Failed to create request")
             completion(.failure(NetworkError.invalidRequest))
             return
         }
         
-        let task = urlSession.objectTask(for: request) { [weak self] (result: Result<UserResult, Error>) in
+        profileImageTask = urlSession.objectTask(for: request) { [weak self] (result: Result<UserResult, Error>) in
             guard let self = self else { return }
+            defer { self.profileImageTask = nil }
             
             switch result {
             case .success(let userResult):
@@ -48,18 +51,20 @@ final class ProfileImageService {
             case .failure(let error):
                 completion(.failure(error))
             }
-            self.profileImageTask = nil
         }
         
-        self.profileImageTask = task
-        task.resume()
+        profileImageTask?.resume()
+    }
+    
+    func resetState() {
+        avatarURL = nil
     }
     
     // MARK: - Private Methods
     
     private func makeProfileImageRequest(authToken: String, username: String) -> URLRequest? {
         guard let publicProfileURL = URL(string: UnsplashURLs.unsplashUserPublicProfileURLString + username) else {
-            print("❌ [makeProfileImageRequest] Incorrect user public profile URL")
+            assertionFailure("❌ [makeProfileImageRequest] Invalid URL for profile image request")
             return nil
         }
         

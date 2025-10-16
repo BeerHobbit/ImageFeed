@@ -6,9 +6,12 @@ final class ProfileService {
     
     static let shared = ProfileService()
     
-    // MARK: - Private Properties
+    // MARK: - Public Properties
     
     private(set) var profile: Profile?
+    
+    // MARK: - Private Properties
+    
     private let urlSession = URLSession.shared
     private var profileTask: URLSessionTask?
     
@@ -28,34 +31,41 @@ final class ProfileService {
             return
         }
         
-        let task = urlSession.objectTask(for: request) { [weak self] (result: Result<ProfileResult, Error>) in
+        profileTask = urlSession.objectTask(for: request) { [weak self] (result: Result<ProfileResult, Error>) in
             guard let self = self else { return }
+            defer { self.profileTask = nil }
             
             switch result {
             case .success(let profileResult):
-                let profile = Profile(
-                    username: profileResult.username,
-                    name: "\(profileResult.firstName) \(profileResult.lastName)",
-                    loginName: "@\(profileResult.username)",
-                    bio: profileResult.bio
-                )
+                let profile = makeProfile(from: profileResult)
                 self.profile = profile
                 completion(.success(profile))
             case .failure(let error):
                 completion(.failure(error))
             }
-            self.profileTask = nil
         }
         
-        self.profileTask = task
-        task.resume()
+        profileTask?.resume()
+    }
+    
+    func resetState() {
+        profile = nil
     }
     
     // MARK: - Private Methods
     
+    private func makeProfile(from result: ProfileResult) -> Profile {
+        Profile(
+            username: result.username,
+            name: "\(result.firstName) \(result.lastName ?? "")",
+            loginName: "@\(result.username)",
+            bio: result.bio
+        )
+    }
+    
     private func makeProfileRequest(authToken: String) -> URLRequest? {
         guard let profileURL = URL(string: UnsplashURLs.unsplashUserProfileURLString) else {
-            print("❌ [makeProfileRequest] Incorrect user profile URL")
+            assertionFailure("❌ [makeProfileRequest] Invalid URL for profile request")
             return nil
         }
         
