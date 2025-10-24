@@ -93,6 +93,11 @@ final class AuthViewController: UIViewController {
         webViewViewController = WebViewViewController()
         guard let webViewViewController = webViewViewController else { return }
         webViewViewController.delegate = self
+        
+        let authHelper = AuthHelper()
+        let webViewPresenter = WebViewPresenter(authHelper: authHelper)
+        webViewViewController.presenter = webViewPresenter
+        webViewPresenter.view = webViewViewController
     }
     
     private func pushToWebViewViewController() {

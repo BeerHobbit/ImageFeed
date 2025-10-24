@@ -23,12 +23,16 @@ final class MainTabBarController: UITabBarController {
     
     private func configTabs() {
         let imagesListViewController = ImagesListViewController()
-        let profileViewController = ProfileViewController()
         imagesListViewController.tabBarItem = UITabBarItem(
             title: "",
             image: UIImage(resource: .tabEditorialActive),
             selectedImage: nil
         )
+        
+        let profileViewController = ProfileViewController()
+        let profilePresenter = ProfilePresenter()
+        profileViewController.presenter = profilePresenter
+        profilePresenter.view = profileViewController
         profileViewController.tabBarItem = UITabBarItem(
             title: "",
             image: UIImage(resource: .tabProfileActive),

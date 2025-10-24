@@ -1,7 +1,11 @@
 import UIKit
 import Kingfisher
 
-final class ProfileViewController: UIViewController {
+final class ProfileViewController: UIViewController, ProfileViewControllerProtocol {
+    
+    // MARK: - Presenter
+    
+    weak var presenter: ProfilePresenterProtocol?
     
     // MARK: - Views
     
@@ -71,9 +75,11 @@ final class ProfileViewController: UIViewController {
     
     // MARK: - Private Properties
     
+    //DELETE
     private var profileService: ProfileService?
     private var profileImageServiceObserver: NSObjectProtocol?
     private var profileLogoutService: ProfileLogoutService?
+    //DELETE
     
     // MARK: - Life Cycle
     
