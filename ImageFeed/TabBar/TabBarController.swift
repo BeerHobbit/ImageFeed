@@ -23,6 +23,10 @@ final class MainTabBarController: UITabBarController {
     
     private func configTabs() {
         let imagesListViewController = ImagesListViewController()
+        let imagesListPresenter = ImagesListPresenter()
+        imagesListViewController.presenter = imagesListPresenter
+        imagesListPresenter.view = imagesListViewController
+        
         imagesListViewController.tabBarItem = UITabBarItem(
             title: "",
             image: UIImage(resource: .tabEditorialActive),
@@ -33,11 +37,13 @@ final class MainTabBarController: UITabBarController {
         let profilePresenter = ProfilePresenter()
         profileViewController.presenter = profilePresenter
         profilePresenter.view = profileViewController
+        
         profileViewController.tabBarItem = UITabBarItem(
             title: "",
             image: UIImage(resource: .tabProfileActive),
             selectedImage: nil
         )
+        
         self.viewControllers = [imagesListViewController, profileViewController]
     }
     
