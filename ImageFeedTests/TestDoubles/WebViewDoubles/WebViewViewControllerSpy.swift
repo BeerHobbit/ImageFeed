@@ -1,10 +1,11 @@
-import ImageFeed
 import Foundation
+@testable import ImageFeed
 
 final class WebViewViewControllerSpy: WebViewViewControllerProtocol {
     
+    private(set) var loadRequestCalled: Bool = false
+    
     var presenter: WebViewPresenterProtocol?
-    var loadRequestCalled: Bool = false
     
     func load(request: URLRequest) {
         loadRequestCalled = true

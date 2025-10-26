@@ -15,8 +15,14 @@ final class ProfilePresenter: ProfilePresenterProtocol {
     
     // MARK: - Initializer
     
-    init() {
-        configDependencies()
+    init(
+        service: ProfileServiceProtocol = ProfileService.shared,
+        imageService: ProfileImageServiceProtocol = ProfileImageService.shared,
+        logoutService: ProfileLogoutServiceProtocol = ProfileLogoutService.shared
+    ) {
+        profileService = service
+        profileImageService = imageService
+        profileLogoutService = logoutService
         setupObserver()
     }
     
@@ -37,12 +43,6 @@ final class ProfilePresenter: ProfilePresenterProtocol {
     }
     
     // MARK: - Private Methods
-    
-    private func configDependencies() {
-        profileService = ProfileService.shared
-        profileImageService = ProfileImageService.shared
-        profileLogoutService = ProfileLogoutService.shared
-    }
     
     private func setupObserver() {
         profileImageServiceObserver = NotificationCenter.default.addObserver(

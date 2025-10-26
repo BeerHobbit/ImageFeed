@@ -143,7 +143,6 @@ final class ProfileViewController: UIViewController, ProfileViewControllerProtoc
         showLogoutAlert()
     }
     
-    
     // MARK: - Private Methods
     
     private func updateProfileUI() {
