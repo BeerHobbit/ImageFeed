@@ -22,6 +22,7 @@ final class ProfileViewController: UIViewController, ProfileViewControllerProtoc
         let buttonImage = UIImage(resource: .logoutButton)
         button.setImage(buttonImage, for: .normal)
         button.tintColor = .ypRed
+        button.accessibilityIdentifier = "LogoutButton"
         return button
     }()
     
@@ -158,13 +159,20 @@ final class ProfileViewController: UIViewController, ProfileViewControllerProtoc
             message: "Уверены, что хотите выйти?",
             preferredStyle: .alert
         )
+        alert.view.accessibilityIdentifier = "LogoutAlert"
+        
         let yesAction = UIAlertAction(title: "Да", style: .default) { [weak self] _ in
             guard let self = self else { return }
             self.presenter?.logoutAndChangeRoot()
         }
+        yesAction.setValue("LogoutYesButton", forKey: "accessibilityIdentifier")
+        
         let noAction = UIAlertAction(title: "Нет", style: .cancel)
+        noAction.setValue("LogoutNoButton", forKey: "accessibilityIdentifier")
+        
         alert.addAction(noAction)
         alert.addAction(yesAction)
+        
         present(alert, animated: true)
     }
     

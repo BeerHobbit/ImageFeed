@@ -13,6 +13,7 @@ final class ImagesListViewController: UIViewController, ImagesListViewController
         tableView.backgroundColor = .ypBlack
         tableView.contentInset = UIEdgeInsets(top: 12, left: 0, bottom: 12, right: 0)
         tableView.register(ImagesListCell.self, forCellReuseIdentifier: ImagesListCell.reuseIdentifier)
+        tableView.accessibilityIdentifier = "ImagesListTable"
         return tableView
     }()
     
