@@ -12,10 +12,14 @@ final class ImagesListPresenter: ImagesListPresenterProtocol {
     private var photos: [Photo] = []
     private var imagesListServiceObserver: NSObjectProtocol?
     
-    init() {
-        configDependencies()
+    // MARK: - Initializer
+    
+    init(service: ImagesListServiceProtocol = ImagesListService.shared) {
+        imagesListService = service
         setupObserver()
     }
+    
+    // MARK: - ImagesListPresenterProtocol
     
     func downloadPhotos() {
         view?.showLoadingIndicator(isBlockingUI: false)
@@ -35,7 +39,7 @@ final class ImagesListPresenter: ImagesListPresenterProtocol {
     }
     
     func didSelectPhoto(indexPath: IndexPath) {
-        guard indexPath.row < photos.count,
+        guard isValidIndexPath(indexPath),
               let imageURL = URL(string: photos[indexPath.row].largeImageURL)
         else {
             print("❌ [didSelectPhoto] incorrect image URL")
@@ -57,6 +61,7 @@ final class ImagesListPresenter: ImagesListPresenterProtocol {
     }
     
     func changeLike(indexPath: IndexPath) {
+        guard isValidIndexPath(indexPath) else { return }
         let photo = photos[indexPath.row]
         let id = photo.id
         let isLike = !photo.isLiked
@@ -88,11 +93,13 @@ final class ImagesListPresenter: ImagesListPresenterProtocol {
         return photos.count
     }
     
-    func getPhoto(indexPath: IndexPath) -> Photo {
+    func getPhoto(indexPath: IndexPath) -> Photo? {
+        guard isValidIndexPath(indexPath) else { return nil }
         return photos[indexPath.row]
     }
     
     func calculateCellHeight(indexPath: IndexPath, viewWidth: CGFloat, topInset: CGFloat, bottomInset: CGFloat) -> CGFloat? {
+        guard isValidIndexPath(indexPath) else { return nil }
         let photoSize = getPhotoSize(indexPath: indexPath)
         guard photoSize.width > 0, photoSize.height > 0 else { return nil }
         let imageWidth = photoSize.width
@@ -101,6 +108,14 @@ final class ImagesListPresenter: ImagesListPresenterProtocol {
         let cellHeight = imageHeight * scale + topInset + bottomInset
         return cellHeight
     }
+    
+    // MARK: - Public Methods
+    
+    func isValidIndexPath(_ indexPath: IndexPath) -> Bool {
+        indexPath.row < photos.count
+    }
+    
+    // MARK: - Private Methods
     
     private func setupObserver() {
         imagesListServiceObserver = NotificationCenter.default.addObserver(
@@ -117,8 +132,15 @@ final class ImagesListPresenter: ImagesListPresenterProtocol {
         return photos[indexPath.row].size
     }
     
-    private func configDependencies() {
-        imagesListService = ImagesListService.shared
+}
+
+#if DEBUG
+extension ImagesListPresenter {
+    
+    convenience init(service: ImagesListServiceProtocol = ImagesListService.shared, photos: [Photo]) {
+        self.init(service: service)
+        self.photos = photos
     }
     
 }
+#endif

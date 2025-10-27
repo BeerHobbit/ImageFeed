@@ -8,6 +8,6 @@ protocol ImagesListPresenterProtocol {
     func getNewIndexPaths() -> [IndexPath]
     func changeLike(indexPath: IndexPath)
     func getPhotosCount() -> Int
-    func getPhoto(indexPath: IndexPath) -> Photo
+    func getPhoto(indexPath: IndexPath) -> Photo?
     func calculateCellHeight(indexPath: IndexPath, viewWidth: CGFloat, topInset: CGFloat, bottomInset: CGFloat) -> CGFloat?
 }

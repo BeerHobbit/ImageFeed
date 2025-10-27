@@ -3,7 +3,7 @@ import XCTest
 
 final class ProfileTests: XCTestCase {
     
-    // MARK: - ProfilePresenter tests
+    // MARK: - ProfilePresenter Tests
     
     func testGetProfile() throws {
         //given
@@ -93,12 +93,12 @@ final class ProfileTests: XCTestCase {
         NotificationCenter.default.post(name: ProfileImageService.didChangeNotification, object: nil)
         
         //then
-        let expectation = try XCTUnwrap(viewController.expectation, "Expectation returns nil")
+        let expectation = try XCTUnwrap(viewController.expectation, "expectation returns nil")
         wait(for: [expectation], timeout: 1.0)
         XCTAssertTrue(viewController.updateAvatarCalled)
     }
     
-    // MARK: - ProfileViewController tests
+    // MARK: - ProfileViewController Tests
     
     func testUpdateAvatarCallsGetAvatarURL() {
         //given
