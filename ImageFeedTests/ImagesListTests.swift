@@ -1,7 +1,15 @@
 import XCTest
 @testable import ImageFeed
 
-final class ImagesListTests: XCTestCase {
+// MARK: - ImagesListPresenter Tests
+
+final class ImagesListPresenterTests: XCTestCase {
+    
+    // MARK: - Test Doubles
+    
+    private var sut: ImagesListPresenter!
+    private var service: ImagesListServiceSpy!
+    private var viewController: ImagesListViewControllerSpy!
     
     // MARK: - Private Properties
     
@@ -30,98 +38,105 @@ final class ImagesListTests: XCTestCase {
         )
     ]
     
-    // MARK: - ImagesListPresenter Tests
+    // MARK: - Setup / Teardown
+    
+    override func setUp() {
+        super.setUp()
+        service = ImagesListServiceSpy()
+        viewController = ImagesListViewControllerSpy()
+        sut = ImagesListPresenter(service: service, photos: photos)
+        viewController.presenter = sut
+        sut.view = viewController
+    }
+    
+    override func tearDown() {
+        service = nil
+        sut = nil
+        viewController = nil
+        super.tearDown()
+    }
+    
+    // MARK: - Tests
     
     func testDownloadPhotosCallsFetchPhotosNextPage() {
-        //given
-        let service = ImagesListServiceSpy()
-        let sut = ImagesListPresenter(service: service)
+        // Given
+        let sut = sut!
         
-        //when
+        // When
         sut.downloadPhotos()
         
-        //then
+        // Then
         XCTAssertTrue(service.fetchPhotosNextPageCalled)
     }
     
     func testDidSelectPhotoCallsPresentSingleImageScreen() {
-        //given
-        let viewController = ImagesListViewControllerSpy()
-        let photos = self.photos
-        let sut = ImagesListPresenter(photos: photos)
-        viewController.presenter = sut
-        sut.view = viewController
+        // Given
+        let sut = sut!
         
-        //when
+        // When
         sut.didSelectPhoto(indexPath: IndexPath(row: 1, section: 0))
         
-        //then
+        // Then
         XCTAssertTrue(viewController.presentSingleImageScreenCalled)
         XCTAssertEqual(viewController.correctURLString, "https://example.com/large_test_1.png")
     }
     
     func testGetNewIndexPaths() {
-        //given
+        // Given
         let startPhotos: [Photo] = []
-        let service = ImagesListServiceSpy()
-        service.photos = self.photos
+        service.photos = photos
         let sut = ImagesListPresenter(service: service, photos: startPhotos)
         let newPhotosCount = photos.count
         
-        //when
+        // When
         let newPaths = sut.getNewIndexPaths()
         
-        //then
+        // Then
         XCTAssertEqual(newPaths.count, newPhotosCount)
     }
     
     func testGetNewIndexPathsWithoutChanges() {
-        //given
-        let service = ImagesListServiceSpy()
+        // Given
+        let sut = sut!
         service.photos = self.photos
-        let sut = ImagesListPresenter(service: service, photos: self.photos)
         
-        //when
+        // When
         let newPaths = sut.getNewIndexPaths()
         
-        //then
+        // Then
         XCTAssertTrue(newPaths.isEmpty)
     }
     
     func testChangeLikeCallsFetchLike() {
-        //given
-        let service = ImagesListServiceSpy()
-        let photos = self.photos
-        let sut = ImagesListPresenter(service: service, photos: photos)
+        // Given
+        let sut = sut!
         let indexPath = IndexPath(row: photos.count - 1, section: 0)
         
-        //when
+        // When
         sut.changeLike(indexPath: indexPath)
         
-        //then
+        // Then
         XCTAssertTrue(service.fetchLikeCalled)
     }
     
     func testGetPhoto() throws {
-        //given
-        let photos = self.photos
-        let sut = ImagesListPresenter(photos: photos)
+        // Given
+        let sut = sut!
         let indexPath = IndexPath(row: 1, section: 0)
         
-        //when
+        // When
         let photo = try XCTUnwrap(sut.getPhoto(indexPath: indexPath), "getPhoto(indexPath:) returns nil")
         
-        //then
+        // Then
         XCTAssertEqual(photo.id, self.photos[indexPath.row].id)
     }
     
     func testCalculateCellHeightWithWidhGreaterThanZero() throws {
-        //given
-        let photos = self.photos
-        let sut = ImagesListPresenter(photos: photos)
+        // Given
+        let sut = sut!
         let indexPath = IndexPath(row: 1, section: 0)
         
-        //when
+        // When
         let height = try XCTUnwrap(
             sut.calculateCellHeight(
                 indexPath: indexPath,
@@ -132,12 +147,12 @@ final class ImagesListTests: XCTestCase {
             "calculateHeight() returns nil"
         )
         
-        //then
+        // Then
         XCTAssertEqual(height, 60)
     }
     
     func testCalculateCellHeightWithZeroWidth() {
-        //given
+        // Given
         let photos = [
             Photo(
                 id: "0",
@@ -151,11 +166,11 @@ final class ImagesListTests: XCTestCase {
                 isLiked: false
             )
         ]
-    
-        let sut = ImagesListPresenter(photos: photos)
+        
+        let sut = ImagesListPresenter(service: service, photos: photos)
         let indexPath = IndexPath(row: 0, section: 0)
         
-        //when
+        // When
         let height = sut.calculateCellHeight(
             indexPath: indexPath,
             viewWidth: 50,
@@ -163,70 +178,86 @@ final class ImagesListTests: XCTestCase {
             bottomInset: 5
         )
         
-        //then
+        // Then
         XCTAssertNil(height)
     }
     
     func testIsValidIndexPath() {
-        //given
-        let photos = self.photos
-        let sut = ImagesListPresenter(photos: photos)
+        // Given
+        let sut = sut!
         let validIndexPath = IndexPath(row: 1, section: 0)
         let invalidIndexPath = IndexPath(row: 2, section: 0)
         
-        //when
+        // When
         let validAnswer = sut.isValidIndexPath(validIndexPath)
         let invalidAnswer = sut.isValidIndexPath(invalidIndexPath)
         
-        //then
+        // Then
         XCTAssertTrue(validAnswer)
         XCTAssertFalse(invalidAnswer)
     }
     
     func testObservation() throws {
-        //given
-        let sut = ImagesListPresenter()
-        let viewController = ImagesListViewControllerSpy()
-        viewController.presenter = sut
-        sut.view = viewController
+        // Given
         viewController.expectation = expectation(description: "updateTableViewAnimated() should be called")
         
-        //when
+        // When
         NotificationCenter.default.post(name: ImagesListService.didChangeNotification, object: nil)
         
-        //then
+        // Then
         let expectation = try XCTUnwrap(viewController.expectation, "expectation returns nil")
         wait(for: [expectation], timeout: 1.0)
         XCTAssertTrue(viewController.updateTableViewAnimatedCalled)
     }
     
-    // MARK: - ImagesListViewController Tests
+}
+
+// MARK: - ImagesListViewController Tests
+
+final class ImagesListViewControllerTests: XCTestCase {
     
-    func testDownloadPhotosCallsWhenViewDidLoad() {
-        //given
-        let sut = ImagesListViewController()
-        let presenter = ImagesListPresenterSpy()
+    // MARK: - Test Doubles
+    
+    private var sut: ImagesListViewController!
+    private var presenter: ImagesListPresenterSpy!
+    
+    // MARK: - Setup / Teardown
+    
+    override func setUp() {
+        super.setUp()
+        sut = ImagesListViewController()
+        presenter = ImagesListPresenterSpy()
         sut.presenter = presenter
         presenter.view = sut
+    }
+    
+    override func tearDown() {
+        presenter = nil
+        sut = nil
+        super.tearDown()
+    }
+    
+    // MARK: - Tests
+    
+    func testDownloadPhotosCallsWhenViewDidLoad() {
+        // Given
+        let sut = sut!
         
-        //when
+        // When
         _ = sut.view
         
-        //then
+        // Then
         XCTAssertTrue(presenter.downloadPhotosCalled)
     }
     
     func testUpdateTableViewAnimatedCallsGetNewIndexPaths() {
-        //given
-        let sut = ImagesListViewController()
-        let presenter = ImagesListPresenterSpy()
-        sut.presenter = presenter
-        presenter.view = sut
+        // Given
+        let sut = sut!
         
-        //when
+        // When
         sut.updateTableViewAnimated()
         
-        //then
+        // Then
         XCTAssertTrue(presenter.getNewIndexPathsCalled)
     }
     

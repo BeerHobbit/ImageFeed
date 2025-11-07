@@ -1,70 +1,142 @@
 import XCTest
 @testable import ImageFeed
 
-final class WebViewTests: XCTestCase {
+// MARK: - WebViewViewControllerTests
+
+final class WebViewViewControllerTests: XCTestCase {
+    
+    // MARK: - Test Doubles
+    
+    private var sut: WebViewViewController!
+    private var presenter: WebViewPresenterSpy!
+    
+    // MARK: - Setup / Teardown
+    
+    override func setUp() {
+        super.setUp()
+        sut = WebViewViewController()
+        presenter = WebViewPresenterSpy()
+        sut.presenter = presenter
+        presenter.view = sut
+    }
+    
+    override func tearDown() {
+        sut = nil
+        presenter = nil
+        super.tearDown()
+    }
+    
+    // MARK: - Tests
     
     func testViewControllerCallsDidLoad() {
-        //given
-        let viewController = WebViewViewController()
-        let presenter = WebViewPresenterSpy()
-        viewController.presenter = presenter
-        presenter.view = viewController
+        // Given
+        let sut = sut!
         
-        //when
-        _ = viewController.view
+        // When
+        _ = sut.view
         
-        //then
+        // Then
         XCTAssertTrue(presenter.viewDidLoadCalled)
     }
     
+}
+
+// MARK: - WebViewPresenter Tests
+
+final class WebViewPresenterTests: XCTestCase {
+    
+    // MARK: - Test Doubles
+    
+    private var sut: WebViewPresenter!
+    private var viewController: WebViewViewControllerSpy!
+    
+    // MARK: - Setup / Teardown
+    
+    override func setUp() {
+        super.setUp()
+        sut = WebViewPresenter(authHelper: AuthHelper())
+        viewController = WebViewViewControllerSpy()
+        viewController.presenter = sut
+        sut.view = viewController
+    }
+    
+    override func tearDown() {
+        sut = nil
+        viewController = nil
+        super.tearDown()
+    }
+    
+    // MARK: - Tests
+    
     func testPresenterCallsLoadRequest() {
-        //given
-        let presenter = WebViewPresenter(authHelper: AuthHelper())
-        let viewController = WebViewViewControllerSpy()
-        presenter.view = viewController
-        viewController.presenter = presenter
+        // Given
+        let sut = sut!
         
-        //when
-        presenter.viewDidLoad()
+        // When
+        sut.viewDidLoad()
         
-        //then
+        // Then
         XCTAssertTrue(viewController.loadRequestCalled)
     }
     
     func testProgressVisibleWhenLessThenOne() {
-        //given
-        let presenter = WebViewPresenter(authHelper: AuthHelper())
+        // Given
+        let sut = sut!
         let progress: Float = 0.6
         
-        //when
-        let shouldHideProgress = presenter.shouldHideProgress(for: progress)
+        // When
+        let shouldHideProgress = sut.shouldHideProgress(for: progress)
         
-        //then
+        // Then
         XCTAssertFalse(shouldHideProgress)
     }
     
     func testProgressHiddenWhenOne() {
-        //given
-        let presenter = WebViewPresenter(authHelper: AuthHelper())
+        // Given
+        let sut = sut!
         let progress: Float = 1
         
-        //when
-        let shouldHideProgress = presenter.shouldHideProgress(for: progress)
+        // When
+        let shouldHideProgress = sut.shouldHideProgress(for: progress)
         
-        //then
+        // Then
         XCTAssertTrue(shouldHideProgress)
     }
     
+}
+
+// MARK: - AuthHelper Tests
+
+final class AuthHelperTests: XCTestCase {
+    
+    // MARK: - Test Doubles
+    
+    private var sut: AuthHelper!
+    
+    // MARK: - Setup / Teardown
+    
+    override func setUp() {
+        super.setUp()
+        sut = AuthHelper(configuration: .standard)
+    }
+    
+    override func tearDown() {
+        sut = nil
+        super.tearDown()
+    }
+    
+    // MARK: - Tests
+    
     func testAuthHelperAuthURL() throws {
-        //given
+        // Given
+        let sut = sut!
         let configuration = AuthConfiguration.standard
-        let authHelper = AuthHelper(configuration: configuration)
         
-        //when
-        let url = authHelper.authURL()
+        // When
+        let url = sut.authURL()
         let urlString = try XCTUnwrap(url?.absoluteString, "authURL() returns nil")
         
-        //then
+        // Then
         XCTAssertTrue(urlString.contains(configuration.authURLString))
         XCTAssertTrue(urlString.contains(configuration.accessKey))
         XCTAssertTrue(urlString.contains(configuration.redirectURI))
@@ -73,17 +145,17 @@ final class WebViewTests: XCTestCase {
     }
     
     func testCodeFromURL() throws {
-        //given
-        let authHelper = AuthHelper()
+        // Given
+        let sut = sut!
         var urlComponents = try XCTUnwrap(URLComponents(string: "https://unsplash.com/oauth/authorize/native"), "URLComponents(string:) returns nil")
         urlComponents.queryItems = [URLQueryItem(name: "code", value: "test code")]
         let url = try XCTUnwrap(urlComponents.url, "urlComponents.url returns nil")
         
-        //when
-        let code = authHelper.code(from: url)
+        // When
+        let code = sut.code(from: url)
         
-        //then
+        // Then
         XCTAssertEqual(code, "test code")
     }
-
+    
 }

@@ -1,25 +1,62 @@
 import XCTest
 @testable import ImageFeed
 
-final class ProfileTests: XCTestCase {
+// MARK: - ProfilePresenter Tests
+
+final class ProfilePresenterTests: XCTestCase {
     
-    // MARK: - ProfilePresenter Tests
+    // MARK: - Test Doubles
+    
+    private var sut: ProfilePresenter!
+    private var service: ProfileServiceStub!
+    private var imageService: ProfileImageServiceStub!
+    private var logoutService: ProfileLogoutServiceSpy!
+    private var viewController: ProfileViewControllerSpy!
+    
+    // MARK: - Setup / Teardown
+    
+    override func setUp() {
+        super.setUp()
+        service = ProfileServiceStub()
+        imageService = ProfileImageServiceStub()
+        logoutService = ProfileLogoutServiceSpy()
+        viewController = ProfileViewControllerSpy()
+        
+        sut = ProfilePresenter(
+            service: service,
+            imageService: imageService,
+            logoutService: logoutService
+        )
+        
+        viewController.presenter = sut
+        sut.view = viewController
+    }
+    
+    override func tearDown() {
+        service = nil
+        imageService = nil
+        logoutService = nil
+        sut = nil
+        viewController = nil
+        super.tearDown()
+    }
+    
+    // MARK: - Tests
     
     func testGetProfile() throws {
-        //given
-        let service = ProfileServiceStub()
+        // Given
+        let sut = sut!
         service.profile = Profile(
             username: "test username",
             name: "test name",
             loginName: "test login",
             bio: "test bio"
         )
-        let sut = ProfilePresenter(service: service)
         
-        //when
+        // When
         let profile = try XCTUnwrap(sut.getProfile(), "getProfile() returns nil")
         
-        //then
+        // Then
         XCTAssertEqual(profile.username, "test username")
         XCTAssertEqual(profile.name, "test name")
         XCTAssertEqual(profile.loginName, "test login")
@@ -27,118 +64,125 @@ final class ProfileTests: XCTestCase {
     }
     
     func testGetProfileReturnsNil() {
-        //given
-        let service = ProfileServiceStub()
+        // Given
+        let sut = sut!
         service.profile = nil
-        let sut = ProfilePresenter(service: service)
         
-        //when
+        // When
         let profile = sut.getProfile()
         
-        //then
+        // Then
         XCTAssertNil(profile)
     }
     
     func testGetAvatarURL() throws {
-        //given
-        let imageService = ProfileImageServiceStub()
+        // Given
+        let sut = sut!
         imageService.avatarURL = "https://example.com/test.png"
-        let sut = ProfilePresenter(imageService: imageService)
         
-        //when
+        // When
         let url = try XCTUnwrap(sut.getAvatarURL(), "getAvatarURL() returns nil")
         
-        //then
+        // Then
         XCTAssertEqual(url.absoluteString, "https://example.com/test.png")
     }
     
     func testGetAvatarURLReturnsNil() {
-        //given
-        let imageService = ProfileImageServiceStub()
+        // Given
+        let sut = sut!
         imageService.avatarURL = nil
-        let sut = ProfilePresenter(imageService: imageService)
         
-        //when
+        // When
         let url = sut.getAvatarURL()
         
-        //then
+        // Then
         XCTAssertNil(url)
     }
     
     func testLogoutAndChangeRootCallsLogoutAndChangeToSplashScreen() {
-        //given
-        let logoutService = ProfileLogoutServiceSpy()
-        let viewController = ProfileViewControllerSpy()
-        let sut = ProfilePresenter(logoutService: logoutService)
-        viewController.presenter = sut
-        sut.view = viewController
+        // Given
+        let sut = sut!
         
-        //when
+        // When
         sut.logoutAndChangeRoot()
         
-        //then
+        // Then
         XCTAssertTrue(logoutService.logoutCalled)
         XCTAssertTrue(viewController.changeToSplashScreenCalled)
     }
     
     func testObservation() throws {
-        //given
-        let sut = ProfilePresenter()
-        let viewController = ProfileViewControllerSpy()
-        viewController.presenter = sut
-        sut.view = viewController
+        // Given
         viewController.expectation = expectation(description: "updateAvatar() should be called")
         
-        //when
+        // When
         NotificationCenter.default.post(name: ProfileImageService.didChangeNotification, object: nil)
         
-        //then
+        // Then
         let expectation = try XCTUnwrap(viewController.expectation, "expectation returns nil")
         wait(for: [expectation], timeout: 1.0)
         XCTAssertTrue(viewController.updateAvatarCalled)
     }
     
-    // MARK: - ProfileViewController Tests
+}
     
-    func testUpdateAvatarCallsGetAvatarURL() {
-        //given
-        let presenter = ProfilePresenterSpy()
-        let sut = ProfileViewController()
+// MARK: - ProfileViewController Tests
+
+final class ProfileViewControllerTests: XCTestCase {
+    
+    // MARK: - Test Doubles
+    
+    private var sut: ProfileViewController!
+    private var presenter: ProfilePresenterSpy!
+    
+    // MARK: - Setup / Teardown
+    
+    override func setUp() {
+        super.setUp()
+        sut = ProfileViewController()
+        presenter = ProfilePresenterSpy()
         sut.presenter = presenter
         presenter.view = sut
+    }
+    
+    override func tearDown() {
+        presenter = nil
+        sut = nil
+        super.tearDown()
+    }
+    
+    // MARK: - Tests
+    
+    func testUpdateAvatarCallsGetAvatarURL() {
+        // Given
+        let sut = sut!
         
-        //when
+        // When
         sut.updateAvatar()
         
-        //then
+        // Then
         XCTAssertTrue(presenter.getAvatarURLCalled)
     }
     
     func testUpdateAvatarCallsGetAvatarURLWhenViewDidLoad() {
-        //given
-        let presenter = ProfilePresenterSpy()
-        let sut = ProfileViewController()
-        sut.presenter = presenter
-        presenter.view = sut
+        // Given
+        let sut = sut!
         
-        //when
+        // When
         _ = sut.view
         
-        //then
+        // Then
         XCTAssertTrue(presenter.getAvatarURLCalled)
     }
     
     func testUpdateProfileUICallsGetProfileWhenViewDidLoad() {
-        //given
-        let presenter = ProfilePresenterSpy()
-        let sut = ProfileViewController()
-        sut.presenter = presenter
-        presenter.view = sut
+        // Given
+        let sut = sut!
         
-        //when
+        // When
         _ = sut.view
         
-        //then
+        // Then
         XCTAssertTrue(presenter.getProfileCalled)
     }
     
