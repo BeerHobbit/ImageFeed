@@ -25,6 +25,7 @@ final class ImagesListCell: UITableViewCell {
         let button = UIButton()
         let image = UIImage(resource: .likeButtonOff)
         button.setImage(image, for: .normal)
+        button.accessibilityIdentifier = "LikeButton"
         return button
     }()
     

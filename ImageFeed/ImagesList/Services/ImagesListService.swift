@@ -1,6 +1,6 @@
 import Foundation
 
-final class ImagesListService {
+final class ImagesListService: ImagesListServiceProtocol {
     
     // MARK: - Singleton
     
@@ -26,7 +26,7 @@ final class ImagesListService {
     
     private init() {}
     
-    // MARK: - Public Methods
+    // MARK: - ImagesListServiceProtocol
     
     func fetchPhotosNextPage(completion: @escaping (Result<[Photo], Error>) -> Void) {
         assert(Thread.isMainThread)
@@ -86,6 +86,8 @@ final class ImagesListService {
         
         likeTask?.resume()
     }
+    
+    // MARK: - Public Methods
     
     func resetState() {
         photos = []

@@ -1,7 +1,11 @@
 import UIKit
 import Kingfisher
 
-final class ProfileViewController: UIViewController {
+final class ProfileViewController: UIViewController, ProfileViewControllerProtocol {
+    
+    // MARK: - Presenter
+    
+    var presenter: ProfilePresenterProtocol?
     
     // MARK: - Views
     
@@ -18,6 +22,7 @@ final class ProfileViewController: UIViewController {
         let buttonImage = UIImage(resource: .logoutButton)
         button.setImage(buttonImage, for: .normal)
         button.tintColor = .ypRed
+        button.accessibilityIdentifier = "LogoutButton"
         return button
     }()
     
@@ -69,30 +74,32 @@ final class ProfileViewController: UIViewController {
         return stack
     }()
     
-    // MARK: - Private Properties
-    
-    private var profileService: ProfileService?
-    private var profileImageServiceObserver: NSObjectProtocol?
-    private var profileLogoutService: ProfileLogoutService?
-    
     // MARK: - Life Cycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        configDependencies()
         configUI()
         configConstraints()
         configActions()
-        setupObserver()
         updateProfileUI()
         updateAvatar()
     }
     
-    // MARK: - Configure Dependencies
+    // MARK: - ProfileViewControllerProtocol
     
-    private func configDependencies() {
-        profileService = ProfileService.shared
-        profileLogoutService = ProfileLogoutService.shared
+    func updateAvatar() {
+        guard let url = presenter?.getAvatarURL() else { return }
+        userpickImageView.kf.indicatorType = .activity
+        userpickImageView.kf.setImage(with: url, placeholder: UIImage(resource: .userpickImageStub))
+    }
+    
+    func changeToSplashScreen() {
+        guard let window = UIApplication.shared.windows.first else {
+            assertionFailure("❌ [logoutAndChangeRoot] Invalid window configuration")
+            return
+        }
+        let splashViewController = SplashViewController()
+        window.rootViewController = splashViewController
     }
     
     // MARK: - Configure UI
@@ -140,40 +147,10 @@ final class ProfileViewController: UIViewController {
     // MARK: - Private Methods
     
     private func updateProfileUI() {
-        guard let profile = profileService?.profile else { return }
+        guard let profile = presenter?.getProfile() else { return }
         usernameLabel.text = profile.name
         loginLabel.text = profile.loginName
         profileDescriptionLabel.text = profile.bio
-    }
-    
-    private func setupObserver() {
-        profileImageServiceObserver = NotificationCenter.default.addObserver(
-            forName: ProfileImageService.didChangeNotification,
-            object: nil,
-            queue: .main,
-        ) { [weak self] _ in
-            guard let self = self else { return }
-            self.updateAvatar()
-        }
-    }
-    
-    private func updateAvatar() {
-        guard
-            let profileImageURL = ProfileImageService.shared.avatarURL,
-            let url = URL(string: profileImageURL)
-        else { return }
-        userpickImageView.kf.indicatorType = .activity
-        userpickImageView.kf.setImage(with: url, placeholder: UIImage(resource: .userpickImageStub))
-    }
-    
-    private func logoutAndChangeRoot() {
-        profileLogoutService?.logout()
-        guard let window = UIApplication.shared.windows.first else {
-            assertionFailure("❌ [logoutAndChangeRoot] Invalid window configuration")
-            return
-        }
-        let splashViewController = SplashViewController()
-        window.rootViewController = splashViewController
     }
     
     private func showLogoutAlert() {
@@ -182,13 +159,20 @@ final class ProfileViewController: UIViewController {
             message: "Уверены, что хотите выйти?",
             preferredStyle: .alert
         )
+        alert.view.accessibilityIdentifier = "LogoutAlert"
+        
         let yesAction = UIAlertAction(title: "Да", style: .default) { [weak self] _ in
             guard let self = self else { return }
-            self.logoutAndChangeRoot()
+            self.presenter?.logoutAndChangeRoot()
         }
+        yesAction.setValue("LogoutYesButton", forKey: "accessibilityIdentifier")
+        
         let noAction = UIAlertAction(title: "Нет", style: .cancel)
+        noAction.setValue("LogoutNoButton", forKey: "accessibilityIdentifier")
+        
         alert.addAction(noAction)
         alert.addAction(yesAction)
+        
         present(alert, animated: true)
     }
     

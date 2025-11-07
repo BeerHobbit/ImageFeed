@@ -10,13 +10,18 @@ final class SingleImageViewController: UIViewController {
     
     private let scrollView = UIScrollView()
     
-    private let imageView = UIImageView()
+    private let imageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.accessibilityIdentifier = "SingleImage"
+        return imageView
+    }()
     
     private let backwardButton: UIButton = {
         let button = UIButton()
         let image = UIImage(resource: .navBackButton)
         button.setImage(image, for: .normal)
         button.tintColor = .ypWhite
+        button.accessibilityIdentifier = "BackwardButton"
         return button
     }()
     

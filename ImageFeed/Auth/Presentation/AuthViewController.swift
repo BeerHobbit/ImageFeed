@@ -17,7 +17,7 @@ final class AuthViewController: UIViewController {
         button.backgroundColor = .ypWhite
         button.layer.cornerRadius = 16
         button.layer.masksToBounds = true
-        
+        button.accessibilityIdentifier = "Authenticate"
         button.setTitle("Войти", for: .normal)
         button.setTitleColor(.ypBlack, for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 17, weight: .bold)
@@ -93,6 +93,11 @@ final class AuthViewController: UIViewController {
         webViewViewController = WebViewViewController()
         guard let webViewViewController = webViewViewController else { return }
         webViewViewController.delegate = self
+        
+        let authHelper = AuthHelper()
+        let webViewPresenter = WebViewPresenter(authHelper: authHelper)
+        webViewViewController.presenter = webViewPresenter
+        webViewPresenter.view = webViewViewController
     }
     
     private func pushToWebViewViewController() {
