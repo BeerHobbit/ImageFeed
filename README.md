@@ -1,5 +1,12 @@
 # ImageFeed
 
+<p align="center">
+    <img src="Screenshots/Auth.png" width="200"/>
+    <img src="Screenshots/Feed.png" width="200"/>
+    <img src="Screenshots/Profile.png" width="200"/>
+    <img src="Screenshots/Photo.png" width="200"/>
+</p>
+
 ## Описание
 
 ImageFeed — это многостраничное iOS-приложение для просмотра фотографий из сервиса Unsplash.
@@ -38,5 +45,3 @@ ImageFeed — это многостраничное iOS-приложение д�
     - Скопировать Access Key, Secret Key и Redirect URI
     - Заменить ключи и URI в файле Namespaces.swift по пути: ImageFeed/Helpers/Namespaces.swift
 5. Запустить проект на эмуляторе или подключенном устройстве
-
-
